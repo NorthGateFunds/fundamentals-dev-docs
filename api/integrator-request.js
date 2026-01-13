@@ -1,3 +1,4 @@
+// api/integrator-request.js
 export const config = { runtime: "nodejs" };
 
 function send(res, status, body) {
@@ -23,6 +24,12 @@ function readJson(req) {
 
 function isEmail(s) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+}
+
+function cleanStr(v) {
+  if (v === undefined || v === null) return null;
+  const s = String(v).trim();
+  return s.length ? s : null;
 }
 
 export default async function handler(req, res) {
@@ -55,45 +62,45 @@ export default async function handler(req, res) {
     return send(res, 400, { ok: false, error: "invalid_email" });
   }
 
+  // We CANNOT write to wire.* through /rest/v1/table unless Supabase exposes the wire schema.
+  // So we call an RPC in public that inserts into wire.integrator_requests.
+  const rpcUrl = `${SUPABASE_URL}/rest/v1/rpc/submit_integrator_request`;
+
   const payload = {
-    kind,
-    email,
-    company: body.company ? String(body.company).trim() : null,
-    name: body.name ? String(body.name).trim() : null,
-    role: body.role ? String(body.role).trim() : null,
-    endpoint_url: body.endpoint_url ? String(body.endpoint_url).trim() : null,
-    delivery_env: body.delivery_env ? String(body.delivery_env).trim() : null,
-    format_preference: body.format_preference ? String(body.format_preference).trim() : null,
-    notes: body.notes ? String(body.notes).trim() : null,
-    source_path: body.source_path ? String(body.source_path).trim() : null,
-    user_agent: req.headers["user-agent"] ? String(req.headers["user-agent"]) : null,
+    p_kind: kind,
+    p_email: email,
+    p_company: cleanStr(body.company),
+    p_name: cleanStr(body.name),
+    p_role: cleanStr(body.role),
+    p_endpoint_url: cleanStr(body.endpoint_url),
+    // accept either delivery_env or environment from your forms
+    p_delivery_env: cleanStr(body.delivery_env || body.environment),
+    p_format_preference: cleanStr(body.format_preference),
+    p_notes: cleanStr(body.notes),
+    p_source_path: cleanStr(body.source_path) || cleanStr(req?.headers?.referer) || null,
+    p_user_agent: cleanStr(req.headers["user-agent"]),
   };
 
-  // IMPORTANT: target the wire schema using PostgREST profiles
-  const insertUrl = `${SUPABASE_URL}/rest/v1/integrator_requests`;
-
-  const r = await fetch(insertUrl, {
+  const r = await fetch(rpcUrl, {
     method: "POST",
     headers: {
       apikey: SERVICE_ROLE,
       authorization: `Bearer ${SERVICE_ROLE}`,
       "content-type": "application/json",
-      prefer: "return=representation",
-
-      // ✅ This is what makes it write to wire.integrator_requests
-      "Content-Profile": "wire",
-      "Accept-Profile": "wire",
     },
     body: JSON.stringify(payload),
   });
 
   if (!r.ok) {
     const t = await r.text().catch(() => "");
-    return send(res, 500, { ok: false, error: "insert_failed", details: t.slice(0, 500) });
+    return send(res, 500, {
+      ok: false,
+      error: "insert_failed",
+      details: t.slice(0, 500),
+    });
   }
 
-  const rows = await r.json().catch(() => []);
-  const row = rows && rows[0];
-
-  return send(res, 200, { ok: true, id: row?.id || null });
+  // Supabase RPC returns the function result directly (uuid as JSON string)
+  const id = await r.json().catch(() => null);
+  return send(res, 200, { ok: true, id });
 }
