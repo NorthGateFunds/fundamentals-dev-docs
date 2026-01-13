@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NewsML (HTTPS Push) • Fundamentals Wire Developer Docs</title>
+
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script defer src="/assets/app.js"></script>
+
+    <meta
+      name="description"
+      content="Integrate with Fundamentals Wire via HTTPS Push. Receive full NewsML 1.2 press releases as immutable XML payloads with stable identifiers and predictable delivery semantics."
+    />
+
+    <!-- Page-scoped styles ONLY for the inline forms + animation -->
+    <style>
+      /* Keep everything within the existing card width */
+      .inlineFormWrap {
+        margin-top: 12px;
+      }
+
+      /* Animated panel (collapsible) */
+      .formPanel {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: #fff;
+        overflow: hidden;
+        box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+      }
+
+      .formPanel[aria-hidden="true"] {
+        display: none;
+      }
+
+      .formPanelHeader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 14px;
+        border-bottom: 1px solid var(--border2);
+      }
+
+      .formPanelTitle {
+        font-weight: 800;
+        letter-spacing: -0.015em;
+        line-height: 1.2;
+        margin: 0;
+        font-size: 14px;
+        color: var(--text);
+      }
+
+      .formPanelSub {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .formCloseBtn {
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--text);
+        border-radius: 12px;
+        height: 34px;
+        padding: 0 10px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .formCloseBtn:hover {
+        background: rgba(15, 23, 42, 0.03);
+      }
+
+      .formPanelBody {
+        padding: 14px;
+      }
+
+      /* Form controls (page-scoped) */
+      .fgrid {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .fcol-12 { grid-column: span 12; }
+      .fcol-6 { grid-column: span 6; }
+      .fcol-4 { grid-column: span 4; }
+      .fcol-3 { grid-column: span 3; }
+      .fcol-8 { grid-column: span 8; }
+
+      @media (max-width: 820px) {
+        .fcol-6, .fcol-4, .fcol-3, .fcol-8 { grid-column: span 12; }
+      }
+
+      .flabel {
+        display: block;
+        font-size: 12px;
+        font-weight: 750;
+        color: rgba(11, 18, 32, 0.82);
+        letter-spacing: -0.005em;
+        margin: 0 0 6px;
+      }
+
+      .fhelp {
+        margin: 6px 0 0;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      .finput,
+      .fselect,
+      .ftextarea {
+        width: 100%;
+        max-width: 100%;
+        border: 1px solid rgba(15, 23, 42, 0.14);
+        border-radius: 12px;
+        padding: 10px 11px;
+        font-size: 14px;
+        outline: none;
+        background: #fff;
+        color: var(--text);
+      }
+
+      .ftextarea {
+        min-height: 92px;
+        resize: vertical;
+        line-height: 1.5;
+      }
+
+      .finput:focus,
+      .fselect:focus,
+      .ftextarea:focus {
+        border-color: rgba(10, 102, 194, 0.35);
+        box-shadow: 0 0 0 4px rgba(10, 102, 194, 0.10);
+      }
+
+      .frow {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 12px;
+        border-top: 1px solid var(--border2);
+        padding-top: 12px;
+      }
+
+      .fstatus {
+        margin-top: 10px;
+        font-size: 12.5px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .fstatus strong {
+        color: var(--text);
+      }
+
+      /* Chips */
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 4px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: rgba(15, 23, 42, 0.02);
+        border-radius: 999px;
+        padding: 7px 10px;
+        font-size: 13px;
+        color: rgba(11, 18, 32, 0.88);
+      }
+      .chip input { margin: 0; }
+    </style>
+  </head>
+
+  <body>
+    <div class="topbar">
+      <div class="left">
+        <button
+          class="iconBtn"
+          data-nav-toggle
+          aria-label="Open navigation"
+          aria-expanded="false"
+        >
+          ☰
+        </button>
+        <div style="font-weight:700;">Fundamentals Wire</div>
+      </div>
+      <div style="color:var(--muted); font-size:12px;">Developer Docs</div>
+    </div>
+
+    <div class="scrim hidden"></div>
+
+    <div class="layout">
+      <aside class="sidebar" role="navigation" aria-label="Docs navigation">
+        <div class="brand">
+          <div class="dot"></div>
+          <div>
+            <div class="title">Fundamentals Wire</div>
+            <div class="subtitle">Developer Documentation</div>
+          </div>
+        </div>
+
+        <div class="nav">
+          <div class="navSection">For Integrators</div>
+          <a href="/integrators/distribution-formats/index.html">Distribution Formats</a>
+          <a
+            href="/integrators/distribution-formats/newsml/index.html"
+            class="active"
+          >
+            NewsML (HTTPS Push)
+          </a>
+
+          <div class="navSection">For Regulators & Legal</div>
+          <a href="/regulators/reg-fd-compliance/index.html">Reg FD Compliance</a>
+          <a href="/regulators/dissemination-architecture/index.html">Dissemination Architecture</a>
+          <a href="/regulators/immutability-recordkeeping/index.html">Immutability & Recordkeeping</a>
+          <a href="/regulators/auditability-evidence/index.html">Auditability & Evidence</a>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="content">
+          <!-- HERO -->
+          <h1 class="h1">NewsML over HTTPS Push</h1>
+
+          <p class="lead">
+            Fundamentals Wire delivers each published press release as a full <strong>NewsML 1.2</strong> document via
+            <strong>HTTPS POST</strong> to an endpoint you control. Each publish event produces one immutable NewsML payload.
+          </p>
+
+          <!-- TOP CTA -->
+          <div class="card">
+            <h3 style="margin-top:0;">Integrate in one afternoon</h3>
+            <p style="margin-bottom:14px;">
+              Register an HTTPS endpoint, receive test deliveries, then go live. Your handler should acknowledge quickly and process the XML asynchronously.
+            </p>
+
+            <div class="ctaList" style="margin-top:12px;">
+              <!-- Push access opens inline form -->
+              <a
+                class="ctaRow ctaRowPrimary"
+                href="#"
+                data-open-panel="pushAccess"
+                aria-controls="panelPushAccess"
+              >
+                <div class="ctaLeft">
+                  <div class="ctaTitle">Request push access</div>
+                  <div class="ctaDesc">Share an email and (optionally) your endpoint URL. We’ll send test deliveries.</div>
+                </div>
+                <div class="ctaRight">Get started →</div>
+              </a>
+
+              <a class="ctaRow" href="#examples">
+                <div class="ctaLeft">
+                  <div class="ctaTitle">Jump to examples</div>
+                  <div class="ctaDesc">Copy/paste request handling patterns and canonical field locations.</div>
+                </div>
+                <div class="ctaRight">View examples →</div>
+              </a>
+
+              <!-- Integration opens inline form -->
+              <a
+                class="ctaRow"
+                href="#"
+                data-open-panel="integration"
+                aria-controls="panelIntegration"
+              >
+                <div class="ctaLeft">
+                  <div class="ctaTitle">Request an integration</div>
+                  <div class="ctaDesc">Have a different schema, routing need, or compliance constraint? Tell us what you’re building.</div>
+                </div>
+                <div class="ctaRight">Open form →</div>
+              </a>
+            </div>
+
+            <!-- Inline forms live INSIDE this card -->
+            <div class="inlineFormWrap">
+              <!-- PUSH ACCESS PANEL -->
+              <div class="formPanel" id="panelPushAccess" aria-hidden="true">
+                <div class="formPanelHeader">
+                  <div>
+                    <div class="formPanelTitle">Request push access</div>
+                    <div class="formPanelSub">
+                      Submit what you have. If you only have an email ready, that’s enough.
+                    </div>
+                  </div>
+                  <button class="formCloseBtn" type="button" data-close-panel="pushAccess" aria-label="Close">
+                    Close
+                  </button>
+                </div>
+
+                <div class="formPanelBody">
+                  <form
+                    id="formPushAccess"
+                    data-fw-kind="push_access"
+                    novalidate
+                  >
+                    <div class="fgrid">
+                      <div class="fcol-6">
+                        <label class="flabel" for="pa_email">Work email</label>
+                        <input class="finput" id="pa_email" name="email" type="email" placeholder="name@company.com" required />
+                      </div>
+
+                      <div class="fcol-6">
+                        <label class="flabel" for="pa_company">Company</label>
+                        <input class="finput" id="pa_company" name="company" type="text" placeholder="Example Co." />
+                      </div>
+
+                      <div class="fcol-8">
+                        <label class="flabel" for="pa_endpoint">Endpoint URL</label>
+                        <input class="finput" id="pa_endpoint" name="endpoint_url" type="url" placeholder="https://example.com/webhooks/fundamentals-wire/newsml" />
+                        <div class="fhelp">If you don’t have the endpoint wired yet, leave this blank.</div>
+                      </div>
+
+                      <div class="fcol-4">
+                        <label class="flabel" for="pa_env">Delivery environment</label>
+                        <select class="fselect" id="pa_env" name="delivery_env">
+                          <option value="" selected>Not sure yet</option>
+                          <option value="staging">Staging / test</option>
+                          <option value="prod">Production</option>
+                          <option value="dev">Development</option>
+                        </select>
+                      </div>
+
+                      <div class="fcol-12">
+                        <label class="flabel" for="pa_notes">Notes</label>
+                        <textarea class="ftextarea" id="pa_notes" name="notes" placeholder="Anything we should know (auth preferences, retries constraints, expected volume, etc.)"></textarea>
+                      </div>
+                    </div>
+
+                    <div class="frow">
+                      <button class="btnGhost" type="button" data-close-panel="pushAccess">Cancel</button>
+                      <button class="btnPrimary" type="submit">Send request</button>
+                    </div>
+
+                    <div class="fstatus" data-fw-status aria-live="polite"></div>
+                  </form>
+                </div>
+              </div>
+
+              <!-- INTEGRATION PANEL -->
+              <div class="formPanel" id="panelIntegration" aria-hidden="true">
+                <div class="formPanelHeader">
+                  <div>
+                    <div class="formPanelTitle">Request an integration</div>
+                    <div class="formPanelSub">
+                      Submit what you can—skip what you don’t have yet.
+                    </div>
+                  </div>
+                  <button class="formCloseBtn" type="button" data-close-panel="integration" aria-label="Close">
+                    Close
+                  </button>
+                </div>
+
+                <div class="formPanelBody">
+                  <form
+                    id="formIntegration"
+                    data-fw-kind="integration"
+                    novalidate
+                  >
+                    <div class="fgrid">
+                      <div class="fcol-6">
+                        <label class="flabel" for="in_email">Work email</label>
+                        <input class="finput" id="in_email" name="email" type="email" placeholder="name@company.com" required />
+                      </div>
+
+                      <div class="fcol-6">
+                        <label class="flabel" for="in_company">Company</label>
+                        <input class="finput" id="in_company" name="company" type="text" placeholder="Example Co." />
+                      </div>
+
+                      <div class="fcol-4">
+                        <label class="flabel" for="in_name">Name</label>
+                        <input class="finput" id="in_name" name="name" type="text" placeholder="Jane Doe" />
+                      </div>
+
+                      <div class="fcol-4">
+                        <label class="flabel" for="in_role">Role</label>
+                        <input class="finput" id="in_role" name="role" type="text" placeholder="Engineering / Data / Partnerships" />
+                      </div>
+
+                      <div class="fcol-4">
+                        <label class="flabel" for="in_env">Delivery environment</label>
+                        <select class="fselect" id="in_env" name="delivery_env">
+                          <option value="" selected>Not sure yet</option>
+                          <option value="staging">Staging / test</option>
+                          <option value="prod">Production</option>
+                          <option value="dev">Development</option>
+                        </select>
+                      </div>
+
+                      <div class="fcol-4">
+                        <label class="flabel" for="in_format">Format preference</label>
+                        <select class="fselect" id="in_format" name="format_preference">
+                          <option value="" selected>Not sure yet</option>
+                          <option value="NewsML">NewsML</option>
+                          <option value="RSS">RSS</option>
+                          <option value="Atom">Atom</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+
+                      <div class="fcol-8">
+                        <label class="flabel" for="in_endpoint">Endpoint URL</label>
+                        <input class="finput" id="in_endpoint" name="endpoint_url" type="url" placeholder="https://example.com/webhooks/..." />
+                      </div>
+
+                      <div class="fcol-12">
+                        <label class="flabel" for="in_notes">What are you trying to build?</label>
+                        <textarea class="ftextarea" id="in_notes" name="notes" placeholder="Goal + constraints (schema mapping, routing, retries, fan-out, compliance, embargo workflows, etc.)."></textarea>
+                      </div>
+                    </div>
+
+                    <div class="frow">
+                      <button class="btnGhost" type="button" data-close-panel="integration">Cancel</button>
+                      <button class="btnPrimary" type="submit">Send request</button>
+                    </div>
+
+                    <div class="fstatus" data-fw-status aria-live="polite"></div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- QUICKSTART -->
+          <div class="card">
+            <h3 style="margin-top:0;">Quickstart</h3>
+            <ol class="list" style="margin-bottom:0;">
+              <li><strong>Provide an HTTPS endpoint</strong> (publicly reachable) and a technical contact.</li>
+              <li><strong>Receive test deliveries</strong> to validate parsing, storage, and idempotency.</li>
+              <li><strong>Go live</strong>: on publish, we <strong>POST</strong> a full NewsML 1.2 document to your endpoint.</li>
+              <li><strong>Acknowledge fast</strong> (2xx) and process asynchronously (queue/job runner recommended).</li>
+            </ol>
+          </div>
+
+          <!-- CONTRACT -->
+          <h2>Delivery contract</h2>
+
+          <div class="card">
+            <div class="kv">
+              <div class="k">Method</div>
+              <div class="v"><code>POST</code></div>
+
+              <div class="k">Content-Type</div>
+              <div class="v"><code>application/xml; charset=utf-8</code></div>
+
+              <div class="k">Body</div>
+              <div class="v">Full NewsML 1.2 XML (UTF-8)</div>
+
+              <div class="k">Trigger</div>
+              <div class="v">Publish event</div>
+
+              <div class="k">Ack</div>
+              <div class="v">Return <code>2xx</code> to acknowledge receipt</div>
+
+              <div class="k">Retries</div>
+              <div class="v">Non-2xx responses or network failures may be retried. Your endpoint must be idempotent.</div>
+            </div>
+          </div>
+
+          <!-- AUTH -->
+          <h2>Authentication and integrity</h2>
+          <p>
+            Push deliveries can include a request signature header. If enabled for your integration, verify the signature against the
+            <strong>raw request body bytes</strong> (before parsing XML). This prevents tampering and confirms the delivery source.
+          </p>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Recommended handler behavior</h3>
+            <ul class="list" style="margin-bottom:0;">
+              <li>Read raw body bytes.</li>
+              <li>If signature is enabled: verify signature over raw bytes.</li>
+              <li>Enqueue for parsing/storage.</li>
+              <li>Return <code>204</code> (or any <code>2xx</code>) immediately.</li>
+            </ul>
+          </div>
+
+          <!-- IDENTITY -->
+          <h2>Stable identifiers and timestamps</h2>
+
+          <p>
+            NewsML provides two stable identifiers you should treat as primary keys, plus an authoritative publish timestamp.
+            Use these to deduplicate, order, and reconcile deliveries across environments.
+          </p>
+
+          <div class="card">
+            <h3 style="margin-top:0;">What to key on</h3>
+            <div class="kv">
+              <div class="k">Primary release key</div>
+              <div class="v"><code>&lt;NewsItemId&gt;</code> (stable per release)</div>
+
+              <div class="k">Global URN</div>
+              <div class="v"><code>&lt;PublicIdentifier&gt;</code> (globally unique URN)</div>
+
+              <div class="k">Authoritative publish time</div>
+              <div class="v"><code>&lt;FirstCreated&gt;</code> (UTC)</div>
+            </div>
+          </div>
+
+          <!-- MAPPING -->
+          <h2>Where to read what</h2>
+          <p>
+            The document is intentionally structured so an integrator can extract the same canonical values every time.
+            Below is a compact map of “what you probably want” to “where it lives” in the NewsML payload.
+          </p>
+
+          <div class="card">
+            <div class="kv">
+              <div class="k">Headline</div>
+              <div class="v"><code>//NewsComponent/NewsLines/HeadLine</code></div>
+
+              <div class="k">Dateline</div>
+              <div class="v"><code>//NewsComponent/NewsLines/DateLine</code></div>
+
+              <div class="k">Slugline (optional)</div>
+              <div class="v"><code>//NewsComponent/NewsLines/SlugLine</code></div>
+
+              <div class="k">Canonical URL</div>
+              <div class="v">
+                NewsLine <code>ClickThru URL</code> and the XHTML footer link inside body content
+              </div>
+
+              <div class="k">Body content</div>
+              <div class="v">
+                A <code>NewsComponent</code> with <code>&lt;Role FormalName="Body"/&gt;</code> containing an XHTML <code>ContentItem</code>
+              </div>
+
+              <div class="k">Contacts (optional)</div>
+              <div class="v">
+                A <code>NewsComponent</code> with <code>&lt;Role FormalName="Contact"/&gt;</code> containing XHTML
+              </div>
+
+              <div class="k">Assets</div>
+              <div class="v">
+                Separate <code>NewsComponent</code> entries with roles such as <code>Photo</code>, <code>Logo</code>, <code>Document</code>, <code>Video</code>
+              </div>
+            </div>
+          </div>
+
+          <!-- BODY -->
+          <h2>Body content and XHTML</h2>
+          <p>
+            The full release body is delivered as an XHTML document inside a role component with <code>FormalName="Body"</code>.
+            Treat the XHTML as content (not code). If you render it, use a safe XHTML renderer or transform to your preferred internal format.
+          </p>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Canonical URL inside the payload</h3>
+            <p style="margin-bottom:0;">
+              The canonical public URL is present as a “ClickThru URL” NewsLine and also appended to the XHTML body footer as a human-checkable source link.
+              This makes it easy to reconcile your stored payload with the public release page.
+            </p>
+          </div>
+
+          <!-- ASSETS -->
+          <h2>Assets</h2>
+          <p>
+            Photos, logos, documents, and video are emitted as separate components with a role, rank, mime type, size, and an <code>Href</code>.
+            Fetch the asset URL on demand. The payload includes enough metadata to preflight type and size before downloading.
+          </p>
+
+          <div class="card">
+            <div class="kv">
+              <div class="k">Role</div>
+              <div class="v"><code>Photo</code> / <code>Logo</code> / <code>Document</code> / <code>Video</code></div>
+
+              <div class="k">Ordering</div>
+              <div class="v"><code>&lt;Rank&gt;</code> (document order)</div>
+
+              <div class="k">Download URL</div>
+              <div class="v"><code>ContentItem Href="..."</code></div>
+
+              <div class="k">Type / size</div>
+              <div class="v"><code>&lt;MimeType&gt;</code> and <code>&lt;SizeInBytes&gt;</code></div>
+            </div>
+          </div>
+
+          <!-- IDEMPOTENCY -->
+          <h2>Idempotency and retries</h2>
+          <p>
+            Your endpoint should be safe to receive duplicate deliveries. Retries can happen due to network failures, timeouts, or non-2xx responses.
+            Deduplicate on <code>NewsItemId</code> (and optionally <code>PublicIdentifier</code>) before writing downstream state.
+          </p>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Practical guidance</h3>
+            <ul class="list" style="margin-bottom:0;">
+              <li>Return <code>2xx</code> once the payload is durably accepted (e.g., queued).</li>
+              <li>Make storage idempotent: ignore duplicates by primary key.</li>
+              <li>Log the publish timestamp (<code>FirstCreated</code>) for ordering and audit trails.</li>
+            </ul>
+          </div>
+
+          <!-- EXAMPLES -->
+          <h2 id="examples">Examples</h2>
+          <p>
+            These examples are intentionally minimal. The goal is to show “what hits your endpoint” and where the canonical values live.
+            You can accept the full payload as-is and store it verbatim alongside parsed fields.
+          </p>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Example HTTP request</h3>
+            <pre class="code"><code>POST /webhooks/fundamentals-wire/newsml HTTP/1.1
+Host: example.com
+Content-Type: application/xml; charset=utf-8
+User-Agent: FundamentalsWire/1.0
+X-FW-Delivery-Id: 74758d9a-99c8-4e5f-9f3f-2b7c2a0d5e11
+X-FW-Signature: t=1700000000,v1=...
+
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;NewsML xmlns="http://iptc.org/std/NewsML/1.2/" Version="1.2"&gt;
+  ...
+&lt;/NewsML&gt;</code></pre>
+            <p style="margin-bottom:0; color:var(--muted);">
+              Respond with <code>204</code> (or any <code>2xx</code>) once you’ve accepted the payload for async processing.
+            </p>
+          </div>
+
+          <div class="footerNote">
+            Fundamentals Wire NewsML profile: NewsML 1.2, press-release oriented, immutable per publish event.
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Inline behavior for the two expandable forms (open/close only). Submission handled by assets/app.js -->
+    <script>
+      (function () {
+        const panels = {
+          pushAccess: document.getElementById("panelPushAccess"),
+          integration: document.getElementById("panelIntegration"),
+        };
+
+        function closeAll() {
+          Object.values(panels).forEach((p) => {
+            if (p) p.setAttribute("aria-hidden", "true");
+          });
+        }
+
+        function openPanel(key) {
+          closeAll();
+          const p = panels[key];
+          if (!p) return;
+          p.setAttribute("aria-hidden", "false");
+          p.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          const first = p.querySelector("input, select, textarea");
+          if (first) setTimeout(() => first.focus(), 50);
+        }
+
+        document.addEventListener("click", (e) => {
+          const a = e.target.closest("[data-open-panel]");
+          if (a) {
+            e.preventDefault();
+            openPanel(a.getAttribute("data-open-panel"));
+            return;
+          }
+          const c = e.target.closest("[data-close-panel]");
+          if (c) {
+            e.preventDefault();
+            closeAll();
+            return;
+          }
+        });
+
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") closeAll();
+        });
+
+        // If you land on #push-access or #integration, open it.
+        if (location.hash === "#push-access") openPanel("pushAccess");
+        if (location.hash === "#integration") openPanel("integration");
+      })();
+    </script>
+  </body>
+</html>
