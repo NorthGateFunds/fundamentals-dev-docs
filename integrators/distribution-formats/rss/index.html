@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RSS Feeds • Fundamentals Wire Developer Docs</title>
+
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script defer src="/assets/app.js"></script>
+
+    <!-- Page-only helpers (kept local so you don’t have to touch app.js yet) -->
+    <script>
+      (function () {
+        function qs(sel, root) { return (root || document).querySelector(sel); }
+        function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+        function clean(s) { return (s || "").trim(); }
+        function toISO(d) { var v = clean(d); if (!v) return ""; return v; }
+
+        function buildFeedUrl(base, state) {
+          var u = new URL(base.replace(/\/+$/, "") + "/feeds/rss.xml", window.location.origin);
+
+          if (state.q) u.searchParams.set("q", state.q);
+          if (state.ticker) u.searchParams.set("ticker", state.ticker);
+          if (state.cik) u.searchParams.set("cik", state.cik);
+          if (state.issuer) u.searchParams.set("issuer", state.issuer);
+
+          if (state.category) u.searchParams.set("category", state.category);
+          if (state.industry) u.searchParams.set("industry", state.industry);
+
+          // Geography: map the existing "rss_us" control to backend param "is_us"
+          // (matches your prior working builder and your issuers.is_us column)
+          if (state.rss_us === "us") u.searchParams.set("is_us", "1");
+          if (state.rss_us === "non-us") u.searchParams.set("is_us", "0");
+
+          if (state.country) u.searchParams.set("country", state.country);
+          if (state.state) u.searchParams.set("state", state.state);
+          if (state.city) u.searchParams.set("city", state.city);
+
+          if (state.limit) u.searchParams.set("limit", state.limit);
+          if (state.after) u.searchParams.set("after", state.after);
+          if (state.before) u.searchParams.set("before", state.before);
+
+          if (state.include_html === "1") u.searchParams.set("include_html", "1");
+          if (state.include_summary === "1") u.searchParams.set("include_summary", "1");
+
+          return u.toString();
+        }
+
+        function setText(el, v) { if (el) el.textContent = v || ""; }
+        function setVal(el, v) { if (el) el.value = v || ""; }
+
+        function serializeState() {
+          var get = function (id) {
+            var el = document.getElementById(id);
+            return el ? clean(el.value) : "";
+          };
+
+          var state = {
+            q: get("rss_q"),
+            ticker: get("rss_ticker"),
+            cik: get("rss_cik"),
+            issuer: get("rss_issuer"),
+            category: get("rss_category"),
+            industry: get("rss_industry"),
+
+            // IMPORTANT: include the existing builder's geography control
+            rss_us: get("rss_us"),
+
+            country: get("rss_country"),
+            state: get("rss_state"),
+            city: get("rss_city"),
+            limit: get("rss_limit"),
+            after: toISO(get("rss_after")),
+            before: toISO(get("rss_before")),
+            include_html: (qs("#rss_include_html") && qs("#rss_include_html").checked) ? "1" : "",
+            include_summary: (qs("#rss_include_summary") && qs("#rss_include_summary").checked) ? "1" : "",
+          };
+
+          Object.keys(state).forEach(function (k) {
+            if (state[k] === "") delete state[k];
+          });
+          return state;
+        }
+
+        function updatePreview() {
+          var base = (qs("meta[name='fw-base']") && qs("meta[name='fw-base']").content) || "";
+          if (!base) base = window.location.origin;
+
+          var state = serializeState();
+          var url = buildFeedUrl(base, state);
+
+          var outUrl = qs("[data-rss-url]");
+          var outCode = qs("[data-rss-code]");
+          var outHint = qs("[data-rss-hint]");
+
+          if (outUrl) outUrl.href = url;
+          setText(outUrl, url);
+
+          var code = "curl -s '" + url.replace(/'/g, "%27") + "' | head";
+          setText(outCode, code);
+
+          if (outHint) {
+            var parts = [];
+            if (state.ticker) parts.push("ticker=" + state.ticker.toUpperCase());
+            if (state.cik) parts.push("cik=" + state.cik);
+            if (state.issuer) parts.push("issuer=" + state.issuer);
+            if (state.category) parts.push("category=" + state.category);
+            if (state.industry) parts.push("industry=" + state.industry);
+
+            if (state.rss_us === "us") parts.push("US only");
+            if (state.rss_us === "non-us") parts.push("International");
+
+            if (state.limit) parts.push("limit=" + state.limit);
+
+            setText(outHint, parts.length ? ("Filter: " + parts.join(" · ")) : "No filters (all public releases).");
+          }
+        }
+
+        function copyText(text) {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            return navigator.clipboard.writeText(text);
+          }
+          var ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand("copy"); } catch (e) {}
+          document.body.removeChild(ta);
+          return Promise.resolve();
+        }
+
+        function mount() {
+          qsa("[data-rss-input]").forEach(function (el) {
+            el.addEventListener("input", updatePreview);
+            el.addEventListener("change", updatePreview);
+          });
+
+          qsa("[data-rss-preset]").forEach(function (btn) {
+            btn.addEventListener("click", function (e) {
+              e.preventDefault();
+              var preset = btn.getAttribute("data-rss-preset");
+
+              [
+                "rss_q","rss_ticker","rss_cik","rss_issuer","rss_category","rss_industry",
+                "rss_us","rss_country","rss_state","rss_city","rss_limit","rss_after","rss_before"
+              ].forEach(function (id) { setVal(document.getElementById(id), ""); });
+
+              var incHtml = qs("#rss_include_html");
+              var incSum = qs("#rss_include_summary");
+              if (incHtml) incHtml.checked = false;
+              if (incSum) incSum.checked = true;
+
+              if (preset === "newsroom") {
+                setVal(qs("#rss_limit"), "50");
+              }
+              if (preset === "investor") {
+                setVal(qs("#rss_limit"), "25");
+              }
+              if (preset === "issuer") {
+                setVal(qs("#rss_ticker"), "AAPL");
+                setVal(qs("#rss_limit"), "25");
+              }
+              if (preset === "monitoring") {
+                setVal(qs("#rss_q"), "acquisition OR merger OR earnings");
+                setVal(qs("#rss_limit"), "50");
+              }
+
+              updatePreview();
+            });
+          });
+
+          var copyUrl = qs("[data-copy-rss-url]");
+          if (copyUrl) {
+            copyUrl.addEventListener("click", function (e) {
+              e.preventDefault();
+              var a = qs("[data-rss-url]");
+              var v = a ? a.textContent : "";
+              copyText(v).then(function () {
+                var old = copyUrl.textContent;
+                copyUrl.textContent = "Copied";
+                setTimeout(function () { copyUrl.textContent = old; }, 900);
+              });
+            });
+          }
+
+          var copyCurl = qs("[data-copy-rss-curl]");
+          if (copyCurl) {
+            copyCurl.addEventListener("click", function (e) {
+              e.preventDefault();
+              var v = (qs("[data-rss-code]") && qs("[data-rss-code]").textContent) || "";
+              copyText(v).then(function () {
+                var old = copyCurl.textContent;
+                copyCurl.textContent = "Copied";
+                setTimeout(function () { copyCurl.textContent = old; }, 900);
+              });
+            });
+          }
+
+          updatePreview();
+        }
+
+        document.addEventListener("DOMContentLoaded", mount);
+      })();
+    </script>
+
+    <!-- Optional: if you deploy docs on a different base than origin, set it here -->
+    <meta name="fw-base" content="" />
+  </head>
+
+  <body>
+    <!-- Mobile top bar -->
+    <div class="topbar">
+      <div class="left">
+        <button class="iconBtn" data-nav-toggle aria-label="Open navigation" aria-expanded="false">
+          ☰
+        </button>
+        <div style="font-weight:700;">Fundamentals Wire</div>
+      </div>
+      <div style="color:var(--muted); font-size:12px;">Developer Docs</div>
+    </div>
+
+    <div class="scrim hidden"></div>
+
+    <div class="layout">
+      <!-- Sidebar -->
+      <aside class="sidebar" role="navigation" aria-label="Docs navigation">
+        <div class="brand">
+          <div class="dot"></div>
+          <div>
+            <div class="title">Fundamentals Wire</div>
+            <div class="subtitle">Developer Documentation</div>
+          </div>
+        </div>
+
+        <div class="nav">
+  <div class="navSection">For Integrators</div>
+  <a href="/integrators/distribution-formats/index.html">Distribution Formats</a>
+  <a href="/integrators/distribution-formats/newsml/index.html">NewsML (HTTPS Push)</a>
+  <a href="/integrators/distribution-formats/rss/index.html" class="active">RSS (Feed Builder)</a>
+  <a href="/integrators/distribution-formats/atom/index.html">Atom (Feed Builder)</a>
+
+  <div class="navSection">For Regulators &amp; Legal</div>
+  <a href="/regulators/reg-fd-compliance/index.html">Reg FD Compliance</a>
+  <a href="/regulators/auditability-evidence/index.html">Auditability &amp; Evidence</a>
+</div>
+      </aside>
+
+      <!-- Main content -->
+      <main class="main">
+        <div class="content">
+          <h1 class="h1">RSS Feeds</h1>
+
+          <p class="lead">
+            RSS is the lightweight surface for discovery and monitoring. Each item links to the canonical public release URL
+            and works with feed readers, alerting systems, and indexers.
+          </p>
+
+          <!-- Builder (compact) -->
+          <div class="fwBar" id="rss-builder">
+            <div class="fwBarHead">
+              <div>
+                <div class="fwBarTitle">Feed builder</div>
+                <div class="fwBarSub">
+                  Select a category and/or industry. Everything maps to <code>/feeds/rss.xml</code>.
+                </div>
+              </div>
+              <div style="color:var(--muted); font-weight:800; font-size:12px; white-space:nowrap;">
+                Builder
+              </div>
+            </div>
+
+            <div class="fwBarRow">
+              <div class="fwCtrl">
+                <label for="rss_category">Category</label>
+                <select id="rss_category" data-rss-input>
+                  <option value="">All</option>
+                  <option value="annual-meeting">Annual meeting</option>
+                  <option value="award">Award</option>
+                  <option value="bankruptcy">Bankruptcy</option>
+                  <option value="bond-issue">Bond issue</option>
+                  <option value="closed-end-fund">Closed-end fund</option>
+                  <option value="conference">Conference</option>
+                  <option value="conference-call">Conference call</option>
+                  <option value="funding">Funding</option>
+                  <option value="stock-split">Stock split</option>
+                </select>
+              </div>
+
+              <div class="fwCtrl">
+                <label for="rss_industry">Industry</label>
+                <select id="rss_industry" data-rss-input>
+                  <option value="">All</option>
+                  <option value="communications">Communications</option>
+                  <option value="construction-property">Construction &amp; property</option>
+                  <option value="consumer">Consumer</option>
+                  <option value="energy">Energy</option>
+                  <option value="natural-resources">Natural resources</option>
+                  <option value="defense">Defense</option>
+                  <option value="education">Education</option>
+                  <option value="entertainment">Entertainment</option>
+                  <option value="philanthropy">Philanthropy</option>
+                  <option value="public-policy-government">Public policy &amp; government</option>
+                  <option value="retail">Retail</option>
+                </select>
+              </div>
+
+              <div class="fwCtrl fwCtrlSlim">
+                <label for="rss_us">Geography</label>
+                <select id="rss_us" data-rss-input>
+                  <option value="">All</option>
+                  <option value="us">US</option>
+                  <option value="non-us">International</option>
+                </select>
+              </div>
+
+              <div class="fwCtrl fwCtrlSlim">
+                <label for="rss_limit">Limit</label>
+                <select id="rss_limit" data-rss-input>
+                  <option value="">Default</option>
+                  <option value="25">25</option>
+                  <option value="50" selected>50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="fwUrl">
+              <div style="min-width:260px; flex: 1 1 260px;">
+                <div style="font-weight:850; letter-spacing:-0.01em; font-size:13px;">Generated feed URL</div>
+                <div class="fwUrlMeta" data-rss-hint></div>
+                <a data-rss-url href="#" target="_blank" rel="noreferrer" class="fwUrlA"></a>
+              </div>
+
+              <div class="fwBarActions">
+                <a href="#" class="btnGhost" data-copy-rss-url style="height:32px; padding:0 12px; font-size:13px;">Copy URL</a>
+                <a href="#" class="btnGhost" data-copy-rss-curl style="height:32px; padding:0 12px; font-size:13px;">Copy curl</a>
+                <a class="btnPrimary" data-rss-url href="#" target="_blank" rel="noreferrer" style="height:32px; padding:0 12px; font-size:13px;">Open</a>
+              </div>
+            </div>
+
+            <pre style="margin-top:10px;"><code data-rss-code></code></pre>
+          </div>
+
+          <!-- Practical guidance -->
+          <div class="card">
+            <h3 style="margin:0;">Implementation notes</h3>
+            <div style="margin-top:10px;">
+              <div class="kv" style="margin-top:0;">
+                <div class="k">Polling</div>
+                <div class="v">
+                  Poll on a fixed cadence. For monitoring workflows, 1–5 minutes is typical. Respect caching headers when present.
+                </div>
+              </div>
+              <div class="kv">
+                <div class="k">Idempotency</div>
+                <div class="v">
+                  Use the RSS item GUID as the primary key. Items may be re-emitted when metadata changes; treat ingestion as upserts.
+                </div>
+              </div>
+              <div class="kv">
+                <div class="k">Canonical URL</div>
+                <div class="v">
+                  Always follow the canonical link to retrieve the full public release. RSS is designed to point, not to carry full-fidelity content.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Examples -->
+          <div class="card">
+            <h3 style="margin:0;">Example feeds</h3>
+            <p style="margin:8px 0 0; color:var(--muted);">
+              A few representative feeds you can use to validate your reader and ingestion pipeline.
+            </p>
+
+            <div style="margin-top:12px; display:flex; flex-direction:column; gap:10px;">
+              <div class="ctaRow">
+                <div class="ctaLeft">
+                  <div class="ctaTitle">All public releases</div>
+                  <div class="ctaDesc">Broad stream for readers, indexers, and alerting systems.</div>
+                </div>
+                <div class="ctaRight">
+                  <a class="btnLink" href="/feeds/rss.xml" target="_blank" rel="noreferrer">Open →</a>
+                </div>
+              </div>
+
+              <div class="ctaRow">
+                <div class="ctaLeft">
+                  <div class="ctaTitle">Bond issue releases</div>
+                  <div class="ctaDesc">Category filter example.</div>
+                </div>
+                <div class="ctaRight">
+                  <a class="btnLink" href="/feeds/rss.xml?category=bond-issue&limit=50" target="_blank" rel="noreferrer">Open →</a>
+                </div>
+              </div>
+
+              <div class="ctaRow">
+                <div class="ctaLeft">
+                  <div class="ctaTitle">US-only retail releases</div>
+                  <div class="ctaDesc">Industry + geography example.</div>
+                </div>
+                <div class="ctaRight">
+                  <a class="btnLink" href="/feeds/rss.xml?industry=retail&amp;is_us=1&amp;limit=50" target="_blank" rel="noreferrer">Open →</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="footerNote">
+            RSS is intended for discovery and monitoring. For full-fidelity ingestion and compliance-grade archiving, use NewsML push.
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

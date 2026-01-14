@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Regulation FD Compliance • Fundamentals Wire Developer Docs</title>
+
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script defer src="/assets/app.js"></script>
+  </head>
+
+  <body>
+    <!-- Mobile top bar -->
+    <div class="topbar">
+      <div class="left">
+        <button class="iconBtn" data-nav-toggle aria-label="Open navigation" aria-expanded="false">☰</button>
+        <div style="font-weight:700;">Fundamentals Wire</div>
+      </div>
+      <div style="color:var(--muted); font-size:12px;">Developer Docs</div>
+    </div>
+
+    <div class="scrim hidden"></div>
+
+    <div class="layout">
+      <!-- Sidebar -->
+      <aside class="sidebar" role="navigation" aria-label="Docs navigation">
+        <div class="brand">
+          <div class="dot"></div>
+          <div>
+            <div class="title">Fundamentals Wire</div>
+            <div class="subtitle">Developer Documentation</div>
+          </div>
+        </div>
+
+        <div class="nav">
+          <div class="navSection">For Integrators</div>
+          <a href="/integrators/distribution-formats/index.html">Distribution Formats</a>
+          <a href="/integrators/distribution-formats/newsml/index.html">NewsML (HTTPS Push)</a>
+          <a href="/integrators/distribution-formats/rss/index.html">RSS (Feed Builder)</a>
+          <a href="/integrators/distribution-formats/atom/index.html">Atom (Feed Builder)</a>
+
+          <div class="navSection">For Regulators &amp; Legal</div>
+          <a href="/regulators/reg-fd-compliance/index.html" class="active">Reg FD Compliance</a>
+          <a href="/regulators/auditability-evidence/index.html">Auditability &amp; Evidence</a>
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <main class="main">
+        <div class="content">
+          <h1 class="h1">Regulation FD Compliance</h1>
+
+          <p class="lead">
+            Regulation Fair Disclosure (“Reg FD”) is a rule adopted by the U.S. Securities and Exchange Commission (SEC)
+            to promote broad, non-selective public disclosure of material information by public companies.
+            The rule is designed to ensure that material, nonpublic information is made available to all investors
+            at the same time, helping preserve fairness and integrity in the capital markets.
+          </p>
+
+          <div class="card">
+            <h3>Overview of Regulation FD</h3>
+            <p>
+              Adopted in 2000, Regulation FD requires that when an issuer, or a person acting on its behalf,
+              discloses material nonpublic information to certain enumerated persons—such as securities analysts,
+              institutional investors, or shareholders reasonably expected to trade on the information—the issuer
+              must also make public disclosure of that information.
+            </p>
+            <p>
+              If the disclosure is intentional, public dissemination must occur simultaneously.
+              If the disclosure is unintentional, the issuer must make prompt public disclosure
+              after learning of the selective release.
+            </p>
+            <p class="fwNote">
+              Primary source: SEC, <em>Selective Disclosure and Insider Trading</em>,
+              Release No. 33-7881 (Aug. 15, 2000),
+              <a href="https://www.sec.gov/rules-regulations/2000/08/selective-disclosure-insider-trading" target="_blank" rel="noreferrer">
+                sec.gov
+              </a>.
+            </p>
+          </div>
+
+          <div class="card">
+            <h3>Selective Disclosure and Public Access</h3>
+            <p>
+              “Selective disclosure” refers to the practice of sharing material nonpublic information
+              with a limited audience—such as a small group of analysts—without providing equivalent
+              access to the investing public. Regulation FD was adopted specifically to curtail this practice.
+            </p>
+            <p>
+              Importantly, Reg FD does not mandate a single method of public dissemination.
+              Instead, disclosure must be made through a method—or combination of methods—
+              reasonably designed to provide broad, non-exclusionary access to the information.
+            </p>
+            <p>
+              Historically recognized methods include filings on Form 8-K, press releases distributed
+              through widely circulated news services, and open conference calls or webcasts
+              that are adequately noticed and accessible to the public.
+            </p>
+            <p class="fwNote">
+              See also: Cornell Law School, Legal Information Institute,
+              <a href="https://www.law.cornell.edu/wex/regulation_fair_disclosure_(fd)" target="_blank" rel="noreferrer">
+                Regulation Fair Disclosure (FD)
+              </a>.
+            </p>
+          </div>
+
+          <div class="card">
+            <h3>Issuer Responsibility and Materiality</h3>
+            <p>
+              Responsibility for compliance with Regulation FD rests squarely with the issuer.
+              Issuers must determine whether information is material and must decide when and how
+              disclosure is required under the rule.
+            </p>
+            <p>
+              Information is generally considered material if there is a substantial likelihood
+              that a reasonable investor would consider it important in making an investment decision.
+              To support these determinations, issuers typically maintain internal disclosure controls
+              and governance processes.
+            </p>
+            <p class="fwNote">
+              See, e.g., Vorys, Sater, Seymour and Pease LLP,
+              <em>Regulation FD: A Refresher on the SEC Rules Governing Selective Disclosure</em>,
+              <a href="https://www.vorys.com/publication-Regulation-FD-A-Refresher-on-the-SEC-Rules-Governing-Selective-Disclosure" target="_blank" rel="noreferrer">
+                vorys.com
+              </a>.
+            </p>
+          </div>
+
+          <div class="card">
+            <h3>Recognized Public Dissemination Channels</h3>
+            <p>
+              The SEC has emphasized that public disclosure must be made through channels
+              that the market recognizes as providing broad distribution.
+              In appropriate circumstances, issuer websites or other electronic channels
+              may qualify, provided they are well-established, publicly accessible,
+              and reasonably designed to reach investors.
+            </p>
+            <p class="fwNote">
+              SEC interpretive guidance on issuer use of electronic media:
+              <a href="https://www.sec.gov/news/speech/2008/spch073008km.htm" target="_blank" rel="noreferrer">
+                Commission Guidance on the Use of Company Websites
+              </a>.
+            </p>
+          </div>
+
+          <div class="card">
+            <h3>Fundamentals Wire and Reg FD Context</h3>
+            <p>
+              Fundamentals Wire provides publicly accessible distribution formats—including RSS,
+              Atom, and NewsML—that are designed for open consumption by readers, indexers,
+              and market participants. These formats support broad access to disclosed information
+              and may be used as part of an issuer’s overall disclosure strategy.
+            </p>
+            <p>
+              Issuers remain solely responsible for determining whether their chosen disclosure
+              methods satisfy Regulation FD requirements in light of their specific facts and circumstances.
+            </p>
+            <ul>
+              <li><a href="/integrators/distribution-formats/rss/index.html">RSS Feeds</a></li>
+              <li><a href="/integrators/distribution-formats/atom/index.html">Atom Feeds</a></li>
+              <li><a href="/integrators/distribution-formats/newsml/index.html">NewsML Push</a></li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>Documentation and Recordkeeping</h3>
+            <p>
+              Many issuers maintain records documenting when, how, and through which channels
+              material information was publicly disseminated. Such records may support internal
+              governance, compliance reviews, or regulatory inquiries.
+            </p>
+            <p>
+              Fundamentals Wire preserves publication artifacts and timestamps associated with
+              distributed content; however, these records do not replace issuer compliance programs
+              or legal determinations.
+            </p>
+          </div>
+
+          <div class="footerNote">
+            This page is provided for informational purposes only and does not constitute legal advice.
+            Issuers should consult qualified securities counsel regarding Regulation FD compliance.
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

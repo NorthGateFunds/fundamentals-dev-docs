@@ -7,35 +7,32 @@
 
     <link rel="stylesheet" href="/assets/styles.css" />
     <script defer src="/assets/app.js"></script>
+    <script defer src="/assets/integrator-accordion.js"></script>
 
     <meta
       name="description"
       content="Integrate with Fundamentals Wire via HTTPS Push. Receive full NewsML 1.2 press releases as immutable XML payloads with stable identifiers and predictable delivery semantics."
     />
 
-    <!-- Page-scoped styles ONLY for the inline forms + animation -->
+    <!-- Page-scoped styles ONLY for the accordions + forms (you said you already added CSS for the wizard grid) -->
     <style>
-      /* Keep everything within the existing card width */
-      .inlineFormWrap {
-        margin-top: 12px;
-      }
+      .inlineFormWrap { margin-top: 12px; }
 
-      /* Animated panel (collapsible) */
+      /* HARD HIDE until opened */
+      .formPanel[aria-hidden="true"] { display: none; }
+
       .formPanel {
         border: 1px solid var(--border);
         border-radius: var(--radius);
         background: #fff;
         overflow: hidden;
         box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
-      }
-
-      .formPanel[aria-hidden="true"] {
-        display: none;
+        margin-top: 12px;
       }
 
       .formPanelHeader {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: space-between;
         gap: 12px;
         padding: 14px 14px;
@@ -43,7 +40,7 @@
       }
 
       .formPanelTitle {
-        font-weight: 800;
+        font-weight: 900;
         letter-spacing: -0.015em;
         line-height: 1.2;
         margin: 0;
@@ -56,6 +53,7 @@
         color: var(--muted);
         font-size: 13px;
         line-height: 1.55;
+        max-width: 760px;
       }
 
       .formCloseBtn {
@@ -66,38 +64,32 @@
         height: 34px;
         padding: 0 10px;
         cursor: pointer;
-        font-weight: 700;
+        font-weight: 800;
         font-size: 13px;
+        white-space: nowrap;
       }
-      .formCloseBtn:hover {
-        background: rgba(15, 23, 42, 0.03);
-      }
+      .formCloseBtn:hover { background: rgba(15, 23, 42, 0.03); }
 
-      .formPanelBody {
-        padding: 14px;
-      }
+      .formPanelBody { padding: 14px; }
 
-      /* Form controls (page-scoped) */
+      /* Form controls */
       .fgrid {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
         gap: 10px;
       }
-
       .fcol-12 { grid-column: span 12; }
       .fcol-6 { grid-column: span 6; }
       .fcol-4 { grid-column: span 4; }
-      .fcol-3 { grid-column: span 3; }
       .fcol-8 { grid-column: span 8; }
-
       @media (max-width: 820px) {
-        .fcol-6, .fcol-4, .fcol-3, .fcol-8 { grid-column: span 12; }
+        .fcol-6, .fcol-4, .fcol-8 { grid-column: span 12; }
       }
 
       .flabel {
         display: block;
         font-size: 12px;
-        font-weight: 750;
+        font-weight: 850;
         color: rgba(11, 18, 32, 0.82);
         letter-spacing: -0.005em;
         margin: 0 0 6px;
@@ -110,9 +102,7 @@
         line-height: 1.45;
       }
 
-      .finput,
-      .fselect,
-      .ftextarea {
+      .finput, .fselect, .ftextarea {
         width: 100%;
         max-width: 100%;
         border: 1px solid rgba(15, 23, 42, 0.14);
@@ -130,9 +120,7 @@
         line-height: 1.5;
       }
 
-      .finput:focus,
-      .fselect:focus,
-      .ftextarea:focus {
+      .finput:focus, .fselect:focus, .ftextarea:focus {
         border-color: rgba(10, 102, 194, 0.35);
         box-shadow: 0 0 0 4px rgba(10, 102, 194, 0.10);
       }
@@ -142,6 +130,7 @@
         gap: 10px;
         flex-wrap: wrap;
         align-items: center;
+        justify-content: flex-end;
         margin-top: 12px;
         border-top: 1px solid var(--border2);
         padding-top: 12px;
@@ -153,30 +142,111 @@
         color: var(--muted);
         line-height: 1.5;
       }
+      .fstatus strong { color: var(--text); }
 
-      .fstatus strong {
+      /* Subtle callout */
+      .fwAllowlist {
+        border: 1px solid rgba(15,23,42,0.10);
+        background: rgba(15,23,42,0.02);
+        border-radius: 12px;
+        padding: 12px;
+        margin: 10px 0 12px;
         color: var(--text);
+        font-size: 13px;
+        line-height: 1.5;
       }
 
-      /* Chips */
-      .chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 4px;
-      }
-      .chip {
+      .fwAllowlistHead { font-weight: 850; margin-bottom: 6px; }
+
+      .fwPill {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        border: 1px solid rgba(15, 23, 42, 0.12);
-        background: rgba(15, 23, 42, 0.02);
+        padding: 6px 10px;
         border-radius: 999px;
-        padding: 7px 10px;
-        font-size: 13px;
-        color: rgba(11, 18, 32, 0.88);
+        border: 1px solid rgba(15,23,42,0.12);
+        background: rgba(15,23,42,0.03);
+        font-size: 12px;
+        font-weight: 800;
+        color: rgba(11,18,32,0.88);
+        white-space: nowrap;
       }
-      .chip input { margin: 0; }
+
+      .btnGhost {
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--text);
+        border-radius: 12px;
+        height: 34px;
+        padding: 0 12px;
+        cursor: pointer;
+        font-weight: 800;
+        font-size: 13px;
+      }
+      .btnGhost:hover { background: rgba(15, 23, 42, 0.03); }
+
+      .btnPrimary {
+        border: 1px solid rgba(10, 102, 194, 0.30);
+        background: rgba(10, 102, 194, 0.92);
+        color: #fff;
+        border-radius: 12px;
+        height: 34px;
+        padding: 0 12px;
+        cursor: pointer;
+        font-weight: 900;
+        font-size: 13px;
+      }
+      .btnPrimary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+      /* Badge inside step headers */
+      .fwStepTop {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .fwStepH {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 950;
+        letter-spacing: -0.01em;
+        color: var(--text);
+        line-height: 1.2;
+      }
+
+      .fwStepP {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+        max-width: 52ch;
+      }
+
+      .fwBadge {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: rgba(15, 23, 42, 0.03);
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 12px;
+        font-weight: 900;
+        color: rgba(11, 18, 32, 0.88);
+        white-space: nowrap;
+      }
+
+      .fwLockNote {
+        border: 1px dashed rgba(15, 23, 42, 0.18);
+        background: rgba(15, 23, 42, 0.02);
+        border-radius: 12px;
+        padding: 10px 11px;
+        margin: 10px 0 12px;
+        color: rgba(11, 18, 32, 0.82);
+        font-size: 12.5px;
+        line-height: 1.5;
+      }
     </style>
   </head>
 
@@ -209,21 +279,16 @@
         </div>
 
         <div class="nav">
-          <div class="navSection">For Integrators</div>
-          <a href="/integrators/distribution-formats/index.html">Distribution Formats</a>
-          <a
-            href="/integrators/distribution-formats/newsml/index.html"
-            class="active"
-          >
-            NewsML (HTTPS Push)
-          </a>
+  <div class="navSection">For Integrators</div>
+  <a href="/integrators/distribution-formats/index.html">Distribution Formats</a>
+  <a href="/integrators/distribution-formats/newsml/index.html" class="active">NewsML (HTTPS Push)</a>
+  <a href="/integrators/distribution-formats/rss/index.html">RSS (Feed Builder)</a>
+  <a href="/integrators/distribution-formats/atom/index.html">Atom (Feed Builder)</a>
 
-          <div class="navSection">For Regulators & Legal</div>
-          <a href="/regulators/reg-fd-compliance/index.html">Reg FD Compliance</a>
-          <a href="/regulators/dissemination-architecture/index.html">Dissemination Architecture</a>
-          <a href="/regulators/immutability-recordkeeping/index.html">Immutability & Recordkeeping</a>
-          <a href="/regulators/auditability-evidence/index.html">Auditability & Evidence</a>
-        </div>
+  <div class="navSection">For Regulators &amp; Legal</div>
+  <a href="/regulators/reg-fd-compliance/index.html">Reg FD Compliance</a>
+  <a href="/regulators/auditability-evidence/index.html">Auditability &amp; Evidence</a>
+</div>
       </aside>
 
       <main class="main">
@@ -240,20 +305,21 @@
           <div class="card">
             <h3 style="margin-top:0;">Integrate in one afternoon</h3>
             <p style="margin-bottom:14px;">
-              Register an HTTPS endpoint, receive test deliveries, then go live. Your handler should acknowledge quickly and process the XML asynchronously.
+              Register an HTTPS endpoint, test delivery, then enable ongoing delivery.
             </p>
 
             <div class="ctaList" style="margin-top:12px;">
-              <!-- Push access opens inline form -->
+              <!-- Push access opens accordion -->
               <a
                 class="ctaRow ctaRowPrimary"
                 href="#"
-                data-open-panel="pushAccess"
-                aria-controls="panelPushAccess"
+                data-open-accordion="pushAccess"
+                aria-controls="pushAccessAccordion"
+                aria-expanded="false"
               >
                 <div class="ctaLeft">
                   <div class="ctaTitle">Request push access</div>
-                  <div class="ctaDesc">Share an email and (optionally) your endpoint URL. We’ll send test deliveries.</div>
+                  <div class="ctaDesc">Add your endpoints. We’ll send a live test delivery and unlock permanent push.</div>
                 </div>
                 <div class="ctaRight">Get started →</div>
               </a>
@@ -261,167 +327,197 @@
               <a class="ctaRow" href="#examples">
                 <div class="ctaLeft">
                   <div class="ctaTitle">Jump to examples</div>
-                  <div class="ctaDesc">Copy/paste request handling patterns and canonical field locations.</div>
+                  <div class="ctaDesc">Copy/paste handler patterns and canonical field locations.</div>
                 </div>
                 <div class="ctaRight">View examples →</div>
               </a>
 
-              <!-- Integration opens inline form -->
               <a
                 class="ctaRow"
                 href="#"
-                data-open-panel="integration"
-                aria-controls="panelIntegration"
+                data-open-accordion="integration"
+                aria-controls="integrationAccordion"
+                aria-expanded="false"
               >
                 <div class="ctaLeft">
                   <div class="ctaTitle">Request an integration</div>
-                  <div class="ctaDesc">Have a different schema, routing need, or compliance constraint? Tell us what you’re building.</div>
+                  <div class="ctaDesc">Have routing/compliance constraints? Tell us what you’re building.</div>
                 </div>
-                <div class="ctaRight">Open form →</div>
+                <div class="ctaRight">Open →</div>
               </a>
             </div>
 
-            <!-- Inline forms live INSIDE this card -->
+            <!-- Accordion area lives INSIDE this card -->
             <div class="inlineFormWrap">
-              <!-- PUSH ACCESS PANEL -->
-              <div class="formPanel" id="panelPushAccess" aria-hidden="true">
+              <!-- PUSH ACCESS ACCORDION (WIZARD OPTION B) -->
+              <div class="formPanel" id="pushAccessAccordion" aria-hidden="true">
                 <div class="formPanelHeader">
                   <div>
-                    <div class="formPanelTitle">Request push access</div>
+                    <div class="formPanelTitle">Set up HTTPS Push</div>
                     <div class="formPanelSub">
-                      Submit what you have. If you only have an email ready, that’s enough.
+                      Step 1 sends a test delivery to your <strong>test</strong> endpoint. Step 2 enables ongoing delivery to your <strong>production</strong> endpoint.
                     </div>
                   </div>
-                  <button class="formCloseBtn" type="button" data-close-panel="pushAccess" aria-label="Close">
+                  <button class="formCloseBtn" type="button" data-close-accordion="pushAccess" aria-label="Close">
                     Close
                   </button>
                 </div>
 
                 <div class="formPanelBody">
-                  <form
-                    id="formPushAccess"
-                    data-fw-kind="push_access"
-                    novalidate
-                  >
-                    <div class="fgrid">
-                      <div class="fcol-6">
-                        <label class="flabel" for="pa_email">Work email</label>
-                        <input class="finput" id="pa_email" name="email" type="email" placeholder="name@company.com" required />
+                  <!-- Wizard grid (you added CSS already; this markup enables it) -->
+                  <div class="fwWizardGrid" data-fw-wizard>
+                    <!-- STEP 1 -->
+                    <section class="fwStep fwStepTest" data-fw-step-view="1">
+                      <div class="fwStepTop">
+                        <div>
+                          <h3 class="fwStepH">1) Test your endpoint</h3>
+                          <p class="fwStepP">We’ll POST a full NewsML payload. Your handler should return <strong>2xx</strong> within a couple seconds.</p>
+                        </div>
+                        <span class="fwBadge" data-fw-badge="1">Test delivery</span>
                       </div>
 
-                      <div class="fcol-6">
-                        <label class="flabel" for="pa_company">Company</label>
-                        <input class="finput" id="pa_company" name="company" type="text" placeholder="Example Co." />
+                      <div class="fwAllowlist" data-fw-copy-scope>
+                        <div class="fwAllowlistHead">If your endpoint filters inbound requests</div>
+                        <div style="margin-bottom:8px;">
+                          <span style="color:var(--muted);">User-Agent:</span>
+                          <span class="fwPill" data-copy-key="ua" data-copy-value="FundamentalsWire/1.0">FundamentalsWire/1.0</span>
+                          <button class="btnGhost" type="button" data-copy-target="ua" data-copy-value="FundamentalsWire/1.0" style="margin-left:8px;">
+                            Copy
+                          </button>
+                        </div>
+                        <div>
+                          <span style="color:var(--muted);">Header:</span>
+                          <span class="fwPill" data-copy-key="hdr" data-copy-value="X-FW-Delivery: 1">X-FW-Delivery: 1</span>
+                          <button class="btnGhost" type="button" data-copy-target="hdr" data-copy-value="X-FW-Delivery: 1" style="margin-left:8px;">
+                            Copy
+                          </button>
+                        </div>
                       </div>
 
-                      <div class="fcol-8">
-                        <label class="flabel" for="pa_endpoint">Endpoint URL</label>
-                        <input class="finput" id="pa_endpoint" name="endpoint_url" type="url" placeholder="https://example.com/webhooks/fundamentals-wire/newsml" />
-                        <div class="fhelp">If you don’t have the endpoint wired yet, leave this blank.</div>
+                      <form id="fwTestForm" novalidate>
+                        <div class="fgrid">
+                          <div class="fcol-6">
+                            <label class="flabel" for="fw_email">Work email</label>
+                            <input class="finput" id="fw_email" name="email" type="email" placeholder="name@company.com" required />
+                          </div>
+
+                          <div class="fcol-6">
+                            <label class="flabel" for="fw_test_endpoint">Test endpoint URL</label>
+                            <input
+                              class="finput"
+                              id="fw_test_endpoint"
+                              name="endpoint_url"
+                              type="url"
+                              placeholder="https://example.com/webhooks/fundamentals-wire/newsml-test"
+                              required
+                            />
+                            <div class="fhelp">Use a staging/test URL. Must accept HTTPS POST and return 2xx quickly.</div>
+                          </div>
+                        </div>
+
+                        <div class="frow">
+                          <button class="btnPrimary" type="submit">Send test</button>
+                        </div>
+
+                        <div class="fstatus" data-fw-status aria-live="polite"></div>
+                      </form>
+                    </section>
+
+                    <!-- STEP 2 -->
+                    <section class="fwStep fwStepProd" data-fw-step-view="2">
+                      <div class="fwStepTop">
+                        <div>
+                          <h3 class="fwStepH">2) Enable ongoing delivery</h3>
+                          <p class="fwStepP">Unlocks after Step 1 completes. Most setups take <strong>~1–2 minutes</strong>.</p>
+                        </div>
+                        <span class="fwBadge" data-fw-badge="2">Enable ongoing</span>
                       </div>
 
-                      <div class="fcol-4">
-                        <label class="flabel" for="pa_env">Delivery environment</label>
-                        <select class="fselect" id="pa_env" name="delivery_env">
-                          <option value="" selected>Not sure yet</option>
-                          <option value="staging">Staging / test</option>
-                          <option value="prod">Production</option>
-                          <option value="dev">Development</option>
-                        </select>
+                      <div class="fwLockNote" id="fwStep2Locked" data-fw-step2-lock>
+                        <strong>Complete test to unlock production delivery.</strong><br />
+                        Most endpoints unlock automatically within ~1–2 minutes.
                       </div>
 
-                      <div class="fcol-12">
-                        <label class="flabel" for="pa_notes">Notes</label>
-                        <textarea class="ftextarea" id="pa_notes" name="notes" placeholder="Anything we should know (auth preferences, retries constraints, expected volume, etc.)"></textarea>
-                      </div>
-                    </div>
+                      <form id="fwEnableForm" novalidate>
+                        <div class="fgrid">
+                          <div class="fcol-6">
+                            <label class="flabel" for="fw_company">Company</label>
+                            <input class="finput" id="fw_company" name="company" type="text" placeholder="Example Co." required />
+                          </div>
 
-                    <div class="frow">
-                      <button class="btnGhost" type="button" data-close-panel="pushAccess">Cancel</button>
-                      <button class="btnPrimary" type="submit">Send request</button>
-                    </div>
+                          <div class="fcol-6">
+                            <label class="flabel" for="fw_phone">Cell phone</label>
+                            <input class="finput" id="fw_phone" name="phone" type="tel" placeholder="+1 (555) 123-4567" />
+                            <div class="fhelp">Optional — used only if your endpoint fails during a live release.</div>
+                          </div>
 
-                    <div class="fstatus" data-fw-status aria-live="polite"></div>
-                  </form>
+                          <div class="fcol-12">
+                            <label class="flabel" for="fw_prod_endpoint">Production endpoint URL</label>
+                            <input
+                              class="finput"
+                              id="fw_prod_endpoint"
+                              name="endpoint_url"
+                              type="url"
+                              placeholder="https://example.com/webhooks/fundamentals-wire/newsml"
+                              required
+                            />
+                            <div class="fhelp">This is where published releases will be delivered.</div>
+                          </div>
+
+                          <div class="fcol-12" style="display:flex; align-items:flex-start; gap:10px; margin-top:2px;">
+                            <input type="checkbox" id="fw_ready" data-fw-step2-ready style="margin-top:3px;" />
+                            <label for="fw_ready" style="font-size:12.5px; color:rgba(11,18,32,0.82); line-height:1.5;">
+                              My production endpoint is ready to return <strong>2xx quickly</strong> and process the body asynchronously.
+                            </label>
+                          </div>
+                        </div>
+
+                        <div class="frow">
+                          <button class="btnPrimary" type="submit" id="fwEnableBtn" disabled>
+                            Enable ongoing delivery
+                          </button>
+                        </div>
+
+                        <div class="fstatus" data-fw-status aria-live="polite"></div>
+                      </form>
+                    </section>
+                  </div>
                 </div>
               </div>
 
-              <!-- INTEGRATION PANEL -->
-              <div class="formPanel" id="panelIntegration" aria-hidden="true">
+              <!-- INTEGRATION ACCORDION -->
+              <div class="formPanel" id="integrationAccordion" aria-hidden="true">
                 <div class="formPanelHeader">
                   <div>
                     <div class="formPanelTitle">Request an integration</div>
-                    <div class="formPanelSub">
-                      Submit what you can—skip what you don’t have yet.
-                    </div>
+                    <div class="formPanelSub">Tell us what you’re building.</div>
                   </div>
-                  <button class="formCloseBtn" type="button" data-close-panel="integration" aria-label="Close">
+                  <button class="formCloseBtn" type="button" data-close-accordion="integration" aria-label="Close">
                     Close
                   </button>
                 </div>
 
                 <div class="formPanelBody">
-                  <form
-                    id="formIntegration"
-                    data-fw-kind="integration"
-                    novalidate
-                  >
+                  <form id="fwIntegrationForm" novalidate>
                     <div class="fgrid">
                       <div class="fcol-6">
-                        <label class="flabel" for="in_email">Work email</label>
-                        <input class="finput" id="in_email" name="email" type="email" placeholder="name@company.com" required />
+                        <label class="flabel" for="fw_int_email">Work email</label>
+                        <input class="finput" id="fw_int_email" name="email" type="email" placeholder="name@company.com" required />
                       </div>
 
                       <div class="fcol-6">
-                        <label class="flabel" for="in_company">Company</label>
-                        <input class="finput" id="in_company" name="company" type="text" placeholder="Example Co." />
-                      </div>
-
-                      <div class="fcol-4">
-                        <label class="flabel" for="in_name">Name</label>
-                        <input class="finput" id="in_name" name="name" type="text" placeholder="Jane Doe" />
-                      </div>
-
-                      <div class="fcol-4">
-                        <label class="flabel" for="in_role">Role</label>
-                        <input class="finput" id="in_role" name="role" type="text" placeholder="Engineering / Data / Partnerships" />
-                      </div>
-
-                      <div class="fcol-4">
-                        <label class="flabel" for="in_env">Delivery environment</label>
-                        <select class="fselect" id="in_env" name="delivery_env">
-                          <option value="" selected>Not sure yet</option>
-                          <option value="staging">Staging / test</option>
-                          <option value="prod">Production</option>
-                          <option value="dev">Development</option>
-                        </select>
-                      </div>
-
-                      <div class="fcol-4">
-                        <label class="flabel" for="in_format">Format preference</label>
-                        <select class="fselect" id="in_format" name="format_preference">
-                          <option value="" selected>Not sure yet</option>
-                          <option value="NewsML">NewsML</option>
-                          <option value="RSS">RSS</option>
-                          <option value="Atom">Atom</option>
-                          <option value="Other">Other</option>
-                        </select>
-                      </div>
-
-                      <div class="fcol-8">
-                        <label class="flabel" for="in_endpoint">Endpoint URL</label>
-                        <input class="finput" id="in_endpoint" name="endpoint_url" type="url" placeholder="https://example.com/webhooks/..." />
+                        <label class="flabel" for="fw_int_company">Company</label>
+                        <input class="finput" id="fw_int_company" name="company" type="text" placeholder="Example Co." />
                       </div>
 
                       <div class="fcol-12">
-                        <label class="flabel" for="in_notes">What are you trying to build?</label>
-                        <textarea class="ftextarea" id="in_notes" name="notes" placeholder="Goal + constraints (schema mapping, routing, retries, fan-out, compliance, embargo workflows, etc.)."></textarea>
+                        <label class="flabel" for="fw_int_notes">Notes</label>
+                        <textarea class="ftextarea" id="fw_int_notes" name="notes" placeholder="Routing/compliance constraints, expected use case, etc."></textarea>
                       </div>
                     </div>
 
                     <div class="frow">
-                      <button class="btnGhost" type="button" data-close-panel="integration">Cancel</button>
-                      <button class="btnPrimary" type="submit">Send request</button>
+                      <button class="btnPrimary" type="submit" id="fwIntegrationBtn">Send</button>
                     </div>
 
                     <div class="fstatus" data-fw-status aria-live="polite"></div>
@@ -436,8 +532,8 @@
             <h3 style="margin-top:0;">Quickstart</h3>
             <ol class="list" style="margin-bottom:0;">
               <li><strong>Provide an HTTPS endpoint</strong> (publicly reachable) and a technical contact.</li>
-              <li><strong>Receive test deliveries</strong> to validate parsing, storage, and idempotency.</li>
-              <li><strong>Go live</strong>: on publish, we <strong>POST</strong> a full NewsML 1.2 document to your endpoint.</li>
+              <li><strong>Verify delivery</strong> by returning a fast <strong>2xx</strong>.</li>
+              <li><strong>Enable ongoing delivery</strong> once your handler is ready.</li>
               <li><strong>Acknowledge fast</strong> (2xx) and process asynchronously (queue/job runner recommended).</li>
             </ol>
           </div>
@@ -631,54 +727,5 @@ X-FW-Signature: t=1700000000,v1=...
         </div>
       </main>
     </div>
-
-    <!-- Inline behavior for the two expandable forms (open/close only). Submission handled by assets/app.js -->
-    <script>
-      (function () {
-        const panels = {
-          pushAccess: document.getElementById("panelPushAccess"),
-          integration: document.getElementById("panelIntegration"),
-        };
-
-        function closeAll() {
-          Object.values(panels).forEach((p) => {
-            if (p) p.setAttribute("aria-hidden", "true");
-          });
-        }
-
-        function openPanel(key) {
-          closeAll();
-          const p = panels[key];
-          if (!p) return;
-          p.setAttribute("aria-hidden", "false");
-          p.scrollIntoView({ behavior: "smooth", block: "nearest" });
-          const first = p.querySelector("input, select, textarea");
-          if (first) setTimeout(() => first.focus(), 50);
-        }
-
-        document.addEventListener("click", (e) => {
-          const a = e.target.closest("[data-open-panel]");
-          if (a) {
-            e.preventDefault();
-            openPanel(a.getAttribute("data-open-panel"));
-            return;
-          }
-          const c = e.target.closest("[data-close-panel]");
-          if (c) {
-            e.preventDefault();
-            closeAll();
-            return;
-          }
-        });
-
-        document.addEventListener("keydown", (e) => {
-          if (e.key === "Escape") closeAll();
-        });
-
-        // If you land on #push-access or #integration, open it.
-        if (location.hash === "#push-access") openPanel("pushAccess");
-        if (location.hash === "#integration") openPanel("integration");
-      })();
-    </script>
   </body>
 </html>

@@ -40,33 +40,16 @@
         </div>
 
         <div class="nav">
-          <div class="navSection">For Integrators</div>
-          <a
-            href="/integrators/distribution-formats/index.html"
-            class="active"
-          >
-            Distribution Formats
-          </a>
-          <a
-            href="/integrators/distribution-formats/newsml/index.html"
-          >
-            NewsML (HTTPS Push)
-          </a>
+  <div class="navSection">For Integrators</div>
+  <a href="/integrators/distribution-formats/index.html" class="active">Distribution Formats</a>
+  <a href="/integrators/distribution-formats/newsml/index.html">NewsML (HTTPS Push)</a>
+  <a href="/integrators/distribution-formats/rss/index.html">RSS (Feed Builder)</a>
+  <a href="/integrators/distribution-formats/atom/index.html">Atom (Feed Builder)</a>
 
-          <div class="navSection">For Regulators & Legal</div>
-          <a href="/regulators/reg-fd-compliance/index.html">
-            Reg FD Compliance
-          </a>
-          <a href="/regulators/dissemination-architecture/index.html">
-            Dissemination Architecture
-          </a>
-          <a href="/regulators/immutability-recordkeeping/index.html">
-            Immutability & Recordkeeping
-          </a>
-          <a href="/regulators/auditability-evidence/index.html">
-            Auditability & Evidence
-          </a>
-        </div>
+  <div class="navSection">For Regulators &amp; Legal</div>
+  <a href="/regulators/reg-fd-compliance/index.html">Reg FD Compliance</a>
+  <a href="/regulators/auditability-evidence/index.html">Auditability &amp; Evidence</a>
+</div>
       </aside>
 
       <!-- Main content -->
@@ -75,58 +58,269 @@
           <h1 class="h1">Distribution Formats</h1>
 
           <p class="lead">
-            Fundamentals Wire distributes press releases through multiple
-            machine-readable formats. Each format serves a distinct integration
-            purpose while referring to the same canonical, immutable release.
+            Fundamentals Wire publishes a single canonical press release, then delivers it across
+            multiple machine-readable surfaces. Choose based on how your system ingests disclosures.
           </p>
 
-          <div class="card">
-            <h3>NewsML (Primary)</h3>
-            <p>
-              NewsML is the canonical, full-fidelity disclosure format used by
-              Fundamentals Wire. Each published press release is delivered as a
-              complete NewsML 1.2 document via HTTPS push to registered
-              integrator endpoints.
-            </p>
-            <p>
-              <a href="/integrators/distribution-formats/newsml/index.html">
-                View NewsML HTTPS Push integration guide →
-              </a>
-            </p>
+          <!-- Format picker -->
+          <div class="card" id="formats">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+              <div>
+                <h3 style="margin:0;">Choose a delivery surface</h3>
+                <p style="margin:8px 0 0; color:var(--muted);">
+                  All surfaces refer to the same canonical release. Use NewsML when you need the complete disclosure payload.
+                  Use RSS/Atom when you want a feed that points back to the canonical public URL.
+                </p>
+              </div>
+              <div style="color:var(--muted); font-weight:700; font-size:12px; white-space:nowrap;">
+                Quick pick
+              </div>
+            </div>
+
+            <div style="margin-top:14px;">
+              <div class="fwFormatGrid">
+                <!-- NEWSML TILE -->
+                <div class="fwFormatTile">
+                  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+                    <div>
+                      <div style="font-weight:900; letter-spacing:-0.01em;">NewsML</div>
+                      <div style="color:var(--muted); font-size:13px; margin-top:4px;">
+                        Push · HTTPS POST
+                      </div>
+                    </div>
+                    <div style="color:var(--muted); font-weight:900; font-size:12px;">
+                      Primary
+                    </div>
+                  </div>
+
+                  <div style="margin-top:10px; color:var(--text); font-size:13px; line-height:1.5;">
+                    Full-fidelity delivery for ingestion, archiving, and downstream redistribution.
+                  </div>
+
+                  <div style="margin-top:10px; display:flex; flex-direction:column; gap:6px; color:var(--muted); font-size:13px;">
+                    <div><strong style="color:var(--text);">Payload:</strong> complete disclosure (blocks, tables, media refs)</div>
+                    <div><strong style="color:var(--text);">Identifiers:</strong> immutable publish events + stable IDs</div>
+                    <div><strong style="color:var(--text);">Integration:</strong> endpoints (test + production) return 2xx quickly</div>
+                  </div>
+
+                  <div style="margin-top:12px;">
+                    <a class="btnLink" href="#newsml">View NewsML →</a>
+                  </div>
+                </div>
+
+                <!-- RSS TILE -->
+                <div class="fwFormatTile">
+                  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+                    <div>
+                      <div style="font-weight:900; letter-spacing:-0.01em;">RSS</div>
+                      <div style="color:var(--muted); font-size:13px; margin-top:4px;">
+                        Pull · Feed URL
+                      </div>
+                    </div>
+                    <div style="color:var(--muted); font-weight:900; font-size:12px;">
+                      Feed
+                    </div>
+                  </div>
+
+                  <div style="margin-top:10px; color:var(--text); font-size:13px; line-height:1.5;">
+                    Lightweight syndication for discovery, monitoring, and simple ingestion.
+                  </div>
+
+                  <div style="margin-top:10px; display:flex; flex-direction:column; gap:6px; color:var(--muted); font-size:13px;">
+                    <div><strong style="color:var(--text);">Payload:</strong> item summary + canonical link</div>
+                    <div><strong style="color:var(--text);">Identifiers:</strong> stable item IDs + straightforward ordering</div>
+                    <div><strong style="color:var(--text);">Integration:</strong> poll the feed URL</div>
+                  </div>
+
+                  <div style="margin-top:12px;">
+                    <a class="btnLink" href="#rss">View RSS →</a>
+                  </div>
+                </div>
+
+                <!-- ATOM TILE -->
+                <div class="fwFormatTile">
+                  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+                    <div>
+                      <div style="font-weight:900; letter-spacing:-0.01em;">Atom</div>
+                      <div style="color:var(--muted); font-size:13px; margin-top:4px;">
+                        Pull · Feed URL
+                      </div>
+                    </div>
+                    <div style="color:var(--muted); font-weight:900; font-size:12px;">
+                      Feed
+                    </div>
+                  </div>
+
+                  <div style="margin-top:10px; color:var(--text); font-size:13px; line-height:1.5;">
+                    A stricter feed for systems that reconcile updates and ordering precisely.
+                  </div>
+
+                  <div style="margin-top:10px; display:flex; flex-direction:column; gap:6px; color:var(--muted); font-size:13px;">
+                    <div><strong style="color:var(--text);">Payload:</strong> richer metadata + canonical link</div>
+                    <div><strong style="color:var(--text);">Identifiers:</strong> strict IDs + updated timestamps</div>
+                    <div><strong style="color:var(--text);">Integration:</strong> poll the feed URL</div>
+                  </div>
+
+                  <div style="margin-top:12px;">
+                    <a class="btnLink" href="#atom">View Atom →</a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Local-only layout helpers for the picker tiles -->
+              <style>
+                .fwFormatGrid{
+                  display:grid;
+                  grid-template-columns: repeat(3, minmax(0, 1fr));
+                  gap:12px;
+                  margin-top:12px;
+                }
+                .fwFormatTile{
+                  border:1px solid var(--border2);
+                  border-radius:14px;
+                  padding:14px;
+                  background:#fff;
+                }
+                @media (max-width: 900px){
+                  .fwFormatGrid{ grid-template-columns: 1fr; }
+                }
+              </style>
+            </div>
           </div>
 
-          <div class="card">
-            <h3>RSS</h3>
-            <p>
-              RSS feeds are intended for broad compatibility and low-friction
-              polling-based ingestion. Each item represents a published press
-              release and links to the canonical public URL.
-            </p>
+          <!-- NewsML -->
+          <div class="card" id="newsml">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+              <div>
+                <h3 style="margin:0;">NewsML (Primary)</h3>
+                <p style="margin:8px 0 0; color:var(--muted);">
+                  Full-fidelity delivery for complete press releases as immutable NewsML 1.2 documents.
+                  Designed for ingestion, archival, and downstream redistribution where correctness matters.
+                </p>
+
+                <!-- Audience chips -->
+                <div class="chipRow">
+                  <span class="chip" data-audience="markets">Exchanges</span>
+                  <span class="chip" data-audience="markets">Funds</span>
+                  <span class="chip" data-audience="markets">Market data vendors</span>
+                  <span class="chip" data-audience="markets">IR platforms</span>
+                  <span class="chip" data-audience="tech">Compliance systems</span>
+                  <span class="chip" data-audience="regulatory">Regulators</span>
+                </div>
+              </div>
+
+              <div style="white-space:nowrap;">
+                <a class="btnLink" href="/integrators/distribution-formats/newsml/index.html">
+                  Integration guide →
+                </a>
+              </div>
+            </div>
+
+            <div style="margin-top:14px;">
+              <div class="kv">
+                <div class="k">Delivery</div>
+                <div class="v">
+                  Push via HTTPS POST to registered endpoints (test + production). Return 2xx promptly and process asynchronously.
+                </div>
+              </div>
+              <div class="kv">
+                <div class="k">Payload</div>
+                <div class="v">
+                  Complete disclosure body, including structured content (blocks, tables) and media references.
+                </div>
+              </div>
+              <div class="kv">
+                <div class="k">Identifiers</div>
+                <div class="v">
+                  Immutable publish events with stable identifiers suitable for audit trails and deterministic ingestion.
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="card">
-            <h3>Atom</h3>
-            <p>
-              Atom feeds provide stronger semantics around identifiers and
-              timestamps. Atom is recommended when strict ordering and update
-              detection matter.
+          <!-- RSS -->
+          <div class="card" id="rss">
+            <h3 style="margin:0;">RSS</h3>
+            <p style="margin:8px 0 0; color:var(--muted);">
+              Lightweight syndication for broad interoperability. Each item links back to the canonical public release URL.
+              Optimized for discovery and monitoring.
             </p>
+
+            <!-- Audience chips -->
+            <div class="chipRow">
+              <span class="chip" data-audience="media">Newsrooms</span>
+              <span class="chip" data-audience="media">Journalists</span>
+              <span class="chip" data-audience="media">Blogs</span>
+              <span class="chip" data-audience="media">Newsletter operators</span>
+              <span class="chip" data-audience="tech">Alerting / monitoring</span>
+              <span class="chip" data-audience="tech">Indexers</span>
+            </div>
+
+            <div style="margin-top:14px;">
+              <div class="kv">
+                <div class="k">Delivery</div>
+                <div class="v">Pull by polling a feed URL.</div>
+              </div>
+              <div class="kv">
+                <div class="k">Payload</div>
+                <div class="v">Item summary plus a canonical link to the full public release.</div>
+              </div>
+              <div class="kv">
+                <div class="k">Identifiers</div>
+                <div class="v">Stable item IDs with straightforward ordering for simple ingestion pipelines.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Atom -->
+          <div class="card" id="atom">
+            <h3 style="margin:0;">Atom</h3>
+            <p style="margin:8px 0 0; color:var(--muted);">
+              A stricter feed surface with stronger semantics around identifiers and updates. Preferred when update detection
+              and timestamp behavior are important to reconciliation.
+            </p>
+
+            <!-- Audience chips -->
+            <div class="chipRow">
+              <span class="chip" data-audience="markets">Market data vendors</span>
+              <span class="chip" data-audience="tech">Indexers</span>
+              <span class="chip" data-audience="markets">Research teams</span>
+              <span class="chip" data-audience="tech">Fintech apps</span>
+            </div>
+
+            <div style="margin-top:14px;">
+              <div class="kv">
+                <div class="k">Delivery</div>
+                <div class="v">Pull by polling a feed URL.</div>
+              </div>
+              <div class="kv">
+                <div class="k">Payload</div>
+                <div class="v">Richer metadata plus a canonical link to the full public release.</div>
+              </div>
+              <div class="kv">
+                <div class="k">Identifiers</div>
+                <div class="v">Strict IDs and updated timestamps suitable for robust polling + reconciliation.</div>
+              </div>
+            </div>
           </div>
 
           <hr class="hr" />
 
+          <!-- Examples -->
           <div class="card">
-            <h3>Example outputs</h3>
-            <p>
-              Format-specific pages include real example payloads generated by
-              the Fundamentals Wire publication pipeline so integrators can
-              validate ingestion behavior against production output.
+            <h3>Example payloads</h3>
+            <p style="color:var(--muted);">
+              Format pages include representative example payloads so integrators can validate parsing behavior,
+              identifiers, and timestamp assumptions.
             </p>
-          </div>
 
-          <div class="footerNote">
-            Current state: published releases are immutable. Corrections and
-            superseding releases are not implemented yet.
+            <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+              <a class="btnLink" href="/integrators/distribution-formats/newsml/index.html">
+                NewsML examples →
+              </a>
+              <span style="color:var(--muted); font-size:13px;">RSS examples (forthcoming)</span>
+              <span style="color:var(--muted); font-size:13px;">Atom examples (forthcoming)</span>
+            </div>
           </div>
         </div>
       </main>

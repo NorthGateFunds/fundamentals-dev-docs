@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RSS Feed Builder • Fundamentals Wire</title>
+
+    <link rel="stylesheet" href="/assets/styles.css" />
+
+    <!-- If your docs base differs from window.location.origin, set it here -->
+    <meta name="fw-base" content="" />
+
+    <style>
+      /* Embedded page body */
+      body.fwBuilderBody{
+        margin: 0;
+        background: transparent;
+        color: var(--text);
+        font-family: var(--font);
+        padding: 0;
+      }
+
+      .fwBuilderShell{ padding: 0; }
+
+      .fwBuilderCard{
+        border: 1px solid var(--border2);
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 1px 0 rgba(15,23,42,.04);
+        padding: 12px;
+      }
+
+      /* Header row */
+      .fwBuilderHead{
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap: 12px;
+      }
+      .fwBuilderTitle{
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+      }
+      .fwBuilderSub{
+        margin-top: 4px;
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .fwBuilderTag{
+        color: var(--muted);
+        font-weight: 800;
+        font-size: 12px;
+        white-space: nowrap;
+        margin-top: 2px;
+      }
+
+      /* Controls row */
+      .fwControls{
+        margin-top: 12px;
+        display:flex;
+        gap: 10px;
+        align-items:flex-end;
+        flex-wrap: wrap;
+        min-width: 0;
+      }
+
+      .fwField{
+        display:flex;
+        flex-direction:column;
+        gap: 4px;
+        min-width: 220px;
+        flex: 1 1 220px;
+      }
+      .fwFieldLabel{
+        font-size: 11px;
+        color: rgba(85,97,113,.90);
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        margin-left: 2px;
+      }
+
+      /* Chip picker */
+      .fwPicker{
+        position: relative;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: #fff;
+        padding: 6px;
+        min-height: 38px;
+        display:flex;
+        align-items:center;
+        gap: 6px;
+        flex-wrap: wrap;
+        box-shadow: 0 1px 0 rgba(15,23,42,.03);
+      }
+      .fwPickerPlaceholder{
+        color: rgba(85,97,113,.95);
+        font-size: 13.5px;
+        padding: 0 6px;
+        user-select: none;
+      }
+      .fwChip{
+        display:inline-flex;
+        align-items:center;
+        gap: 8px;
+        height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(15,23,42,.12);
+        background: rgba(15,23,42,.03);
+        color: rgba(11,18,32,.90);
+        font-size: 13px;
+        font-weight: 650;
+        letter-spacing: -0.005em;
+      }
+      .fwChipX{
+        border:0;
+        background: transparent;
+        cursor: pointer;
+        font-weight: 900;
+        color: rgba(11,18,32,.55);
+        padding: 0;
+        line-height: 1;
+      }
+      .fwChipX:hover{ color: rgba(11,18,32,.85); }
+
+      .fwAddBtn{
+        margin-left: auto;
+        height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(15,23,42,.14);
+        background: #fff;
+        cursor: pointer;
+        font-weight: 750;
+        font-size: 13px;
+        color: rgba(11,18,32,.86);
+        white-space: nowrap;
+      }
+      .fwAddBtn:hover{ background: rgba(15,23,42,.03); }
+
+      /* Popover panel */
+      .fwPopover{
+        position:absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        width: 360px;
+        max-width: min(86vw, 420px);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: var(--shadow);
+        padding: 10px;
+        z-index: 40;
+        display:none;
+      }
+      .fwPicker.open .fwPopover{ display:block; }
+      .fwPopoverTop{
+        display:flex;
+        gap: 8px;
+        align-items:center;
+      }
+      .fwSearch{
+        flex: 1 1 auto;
+        height: 34px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        padding: 0 10px;
+        font-size: 13.5px;
+      }
+      .fwClearBtn{
+        height: 34px;
+        border-radius: 12px;
+        border: 1px solid rgba(15,23,42,.14);
+        background: #fff;
+        padding: 0 10px;
+        cursor: pointer;
+        font-weight: 750;
+        font-size: 13px;
+      }
+      .fwList{
+        margin-top: 10px;
+        max-height: 260px;
+        overflow:auto;
+        -webkit-overflow-scrolling: touch;
+        border-top: 1px solid var(--border2);
+        padding-top: 8px;
+      }
+      .fwItem{
+        display:flex;
+        align-items:center;
+        gap: 10px;
+        padding: 8px 8px;
+        border-radius: 10px;
+        font-size: 13.5px;
+        cursor: pointer;
+      }
+      .fwItem:hover{ background: rgba(15,23,42,.03); }
+      .fwItem input{
+        width: 16px;
+        height: 16px;
+        accent-color: #0a66c2;
+      }
+      .fwPopoverBottom{
+        margin-top: 10px;
+        border-top: 1px solid var(--border2);
+        padding-top: 10px;
+        display:flex;
+        justify-content:flex-end;
+      }
+      .fwDoneBtn{
+        height: 34px;
+        border-radius: 12px;
+        border: 1px solid rgba(10,102,194,.22);
+        background: rgba(10,102,194,.06);
+        padding: 0 12px;
+        cursor: pointer;
+        font-weight: 850;
+        color: #063a6b;
+      }
+
+      /* Limit select */
+      .fwSelect{
+        height: 38px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        padding: 0 10px;
+        font-size: 13.5px;
+        background: #fff;
+        color: var(--text);
+        box-shadow: 0 1px 0 rgba(15,23,42,.03);
+      }
+
+      /* Actions */
+      .fwActions{
+        display:flex;
+        gap: 8px;
+        align-items:center;
+        flex: 0 0 auto;
+        margin-left: auto;
+      }
+      .fwBtnCompact{
+        height: 38px !important;
+        padding: 0 12px !important;
+        border-radius: 12px !important;
+        white-space: nowrap;
+      }
+
+      /* Output */
+      .fwOut{
+        margin-top: 12px;
+        border-top: 1px solid var(--border2);
+        padding-top: 12px;
+      }
+      .fwOutTop{
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap: 12px;
+      }
+      .fwOutLabel{
+        font-weight: 850;
+        font-size: 12.5px;
+        letter-spacing: -0.01em;
+      }
+      .fwOutHint{
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .fwOutUrl{
+        display:block;
+        margin-top: 8px;
+        font-weight: 650;
+        word-break: break-word;
+        overflow-wrap:anywhere;
+      }
+      pre.fwOutPre{ margin-top: 10px; }
+
+      /* Mobile */
+      @media (max-width: 820px){
+        .fwField{ min-width: 100%; flex: 1 1 100%; }
+        .fwActions{ width: 100%; justify-content:flex-end; margin-left: 0; }
+      }
+    </style>
+  </head>
+
+  <body class="fwBuilderBody">
+    <div class="fwBuilderShell">
+      <div class="fwBuilderCard" role="region" aria-label="RSS feed builder">
+        <div class="fwBuilderHead">
+          <div>
+            <div class="fwBuilderTitle">Feed builder</div>
+            <div class="fwBuilderSub">
+              Select categories and industries. Everything maps to <code>/feeds/rss.xml</code>.
+            </div>
+          </div>
+          <div class="fwBuilderTag">Builder</div>
+        </div>
+
+        <div class="fwControls">
+          <!-- Category chips -->
+          <div class="fwField" style="flex: 2 1 320px;">
+            <div class="fwFieldLabel">Category</div>
+
+            <div class="fwPicker" data-picker="category">
+              <span class="fwPickerPlaceholder" data-placeholder>Any</span>
+              <button class="fwAddBtn" type="button" data-open>+ Add</button>
+
+              <div class="fwPopover" role="dialog" aria-label="Select categories">
+                <div class="fwPopoverTop">
+                  <input class="fwSearch" type="search" placeholder="Filter categories…" data-filter />
+                  <button class="fwClearBtn" type="button" data-clear>Clear</button>
+                </div>
+
+                <div class="fwList" data-list>
+                  <label class="fwItem"><input type="checkbox" value="annual-meeting" /> Annual meeting</label>
+                  <label class="fwItem"><input type="checkbox" value="award" /> Award</label>
+                  <label class="fwItem"><input type="checkbox" value="bankruptcy" /> Bankruptcy</label>
+                  <label class="fwItem"><input type="checkbox" value="bond-issue" /> Bond issue</label>
+                  <label class="fwItem"><input type="checkbox" value="closed-end-fund" /> Closed-end fund</label>
+                  <label class="fwItem"><input type="checkbox" value="conference" /> Conference</label>
+                  <label class="fwItem"><input type="checkbox" value="conference-call" /> Conference call</label>
+                  <label class="fwItem"><input type="checkbox" value="funding" /> Funding</label>
+                  <label class="fwItem"><input type="checkbox" value="stock-split" /> Stock split</label>
+                </div>
+
+                <div class="fwPopoverBottom">
+                  <button class="fwDoneBtn" type="button" data-done>Done</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Industry chips -->
+          <div class="fwField" style="flex: 2 1 320px;">
+            <div class="fwFieldLabel">Industry</div>
+
+            <div class="fwPicker" data-picker="industry">
+              <span class="fwPickerPlaceholder" data-placeholder>Any</span>
+              <button class="fwAddBtn" type="button" data-open>+ Add</button>
+
+              <div class="fwPopover" role="dialog" aria-label="Select industries">
+                <div class="fwPopoverTop">
+                  <input class="fwSearch" type="search" placeholder="Filter industries…" data-filter />
+                  <button class="fwClearBtn" type="button" data-clear>Clear</button>
+                </div>
+
+                <div class="fwList" data-list>
+                  <label class="fwItem"><input type="checkbox" value="communications" /> Communications</label>
+                  <label class="fwItem"><input type="checkbox" value="construction-property" /> Construction &amp; property</label>
+                  <label class="fwItem"><input type="checkbox" value="consumer" /> Consumer</label>
+                  <label class="fwItem"><input type="checkbox" value="defense" /> Defense</label>
+                  <label class="fwItem"><input type="checkbox" value="education" /> Education</label>
+                  <label class="fwItem"><input type="checkbox" value="energy" /> Energy</label>
+                  <label class="fwItem"><input type="checkbox" value="entertainment" /> Entertainment</label>
+                  <label class="fwItem"><input type="checkbox" value="natural-resources" /> Natural resources</label>
+                  <label class="fwItem"><input type="checkbox" value="philanthropy" /> Philanthropy</label>
+                  <label class="fwItem"><input type="checkbox" value="public-policy-government" /> Public policy &amp; government</label>
+                  <label class="fwItem"><input type="checkbox" value="retail" /> Retail</label>
+                </div>
+
+                <div class="fwPopoverBottom">
+                  <button class="fwDoneBtn" type="button" data-done>Done</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Limit (optional) -->
+          <div class="fwField" style="flex: 0 0 170px; min-width:170px;">
+            <label class="fwFieldLabel" for="fw_limit">Limit</label>
+            <select id="fw_limit" class="fwSelect">
+              <option value="">Default</option>
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+
+          <div class="fwActions">
+            <button class="btnGhost fwBtnCompact" type="button" id="fw_copy_url">Copy URL</button>
+            <button class="btnGhost fwBtnCompact" type="button" id="fw_copy_curl">Copy curl</button>
+            <a class="btnPrimary fwBtnCompact" id="fw_open" href="/feeds/rss.xml" target="_blank" rel="noreferrer">Open</a>
+          </div>
+        </div>
+
+        <div class="fwOut" aria-label="Generated output">
+          <div class="fwOutTop">
+            <div>
+              <div class="fwOutLabel">Generated feed URL</div>
+              <div class="fwOutHint" id="fw_hint">No filters (all public releases).</div>
+            </div>
+          </div>
+
+          <a class="fwOutUrl" id="fw_url" href="/feeds/rss.xml" target="_blank" rel="noreferrer"></a>
+
+          <pre class="fwOutPre"><code id="fw_curl"></code></pre>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        function qs(sel, root) { return (root || document).querySelector(sel); }
+        function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+        function clean(s) { return (s || "").trim(); }
+
+        function getBase() {
+          var m = qs("meta[name='fw-base']");
+          if (m && clean(m.content)) return clean(m.content);
+          return window.location.origin;
+        }
+
+        function titleize(code) {
+          return code
+            .replace(/-/g, " ")
+            .replace(/\b\w/g, function (m) { return m.toUpperCase(); });
+        }
+
+        function getSelectedValues(pickerName) {
+          var root = qs(".fwPicker[data-picker='" + pickerName + "']");
+          if (!root) return [];
+          return qsa("input[type='checkbox']:checked", root).map(function (i) { return i.value; });
+        }
+
+        function buildUrl() {
+          var base = getBase().replace(/\/+$/, "");
+          var u = new URL(base + "/feeds/rss.xml", window.location.origin);
+
+          var cats = getSelectedValues("category");
+          var inds = getSelectedValues("industry");
+
+          cats.forEach(function (v) { u.searchParams.append("category", v); });
+          inds.forEach(function (v) { u.searchParams.append("industry", v); });
+
+          var limit = clean(qs("#fw_limit").value);
+          if (limit) u.searchParams.set("limit", limit);
+
+          // Keep RSS useful by default
+          u.searchParams.set("include_summary", "1");
+
+          return u.toString();
+        }
+
+        function renderChips(pickerName) {
+          var root = qs(".fwPicker[data-picker='" + pickerName + "']");
+          if (!root) return;
+
+          // Remove existing chips
+          qsa(".fwChip", root).forEach(function (c) { c.remove(); });
+
+          var vals = getSelectedValues(pickerName);
+          var placeholder = qs("[data-placeholder]", root);
+          if (placeholder) placeholder.style.display = vals.length ? "none" : "";
+
+          // Insert chips before the "+ Add" button
+          var addBtn = qs("[data-open]", root);
+
+          vals.forEach(function (v) {
+            var chip = document.createElement("span");
+            chip.className = "fwChip";
+            chip.setAttribute("data-value", v);
+            chip.innerHTML =
+              "<span>" + titleize(v) + "</span>" +
+              "<button class='fwChipX' type='button' aria-label='Remove " + titleize(v) + "'>&times;</button>";
+
+            chip.querySelector(".fwChipX").addEventListener("click", function (e) {
+              e.preventDefault();
+              var cb = qs("input[type='checkbox'][value='" + CSS.escape(v) + "']", root);
+              if (cb) cb.checked = false;
+              renderChips(pickerName);
+              update();
+            });
+
+            root.insertBefore(chip, addBtn);
+          });
+        }
+
+        function update() {
+          var url = buildUrl();
+
+          var a = qs("#fw_url");
+          var open = qs("#fw_open");
+          a.textContent = url;
+          a.href = url;
+          open.href = url;
+
+          qs("#fw_curl").textContent = "curl -s '" + url.replace(/'/g, "%27") + "' | head";
+
+          var hintParts = [];
+          var cats = getSelectedValues("category");
+          var inds = getSelectedValues("industry");
+
+          if (cats.length) hintParts.push("category=" + cats.join(","));
+          if (inds.length) hintParts.push("industry=" + inds.join(","));
+
+          var limit = clean(qs("#fw_limit").value);
+          if (limit) hintParts.push("limit=" + limit);
+
+          qs("#fw_hint").textContent =
+            hintParts.length ? ("Filter: " + hintParts.join(" · ")) : "No filters (all public releases).";
+        }
+
+        function copyText(text) {
+          if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text);
+          var ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand("copy"); } catch (e) {}
+          document.body.removeChild(ta);
+          return Promise.resolve();
+        }
+
+        function mountPicker(root) {
+          var openBtn = qs("[data-open]", root);
+          var pop = qs(".fwPopover", root);
+          var filter = qs("[data-filter]", root);
+          var clearBtn = qs("[data-clear]", root);
+          var doneBtn = qs("[data-done]", root);
+          var list = qs("[data-list]", root);
+          var pickerName = root.getAttribute("data-picker");
+
+          function open() {
+            root.classList.add("open");
+            if (filter) { filter.focus(); }
+          }
+          function close() {
+            root.classList.remove("open");
+            if (filter) {
+              filter.value = "";
+              filter.dispatchEvent(new Event("input"));
+            }
+          }
+
+          openBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            if (root.classList.contains("open")) close();
+            else open();
+          });
+
+          doneBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            close();
+          });
+
+          clearBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            qsa("input[type='checkbox']", root).forEach(function (i) { i.checked = false; });
+            renderChips(pickerName);
+            update();
+          });
+
+          root.addEventListener("change", function (e) {
+            if (e.target && e.target.matches("input[type='checkbox']")) {
+              renderChips(pickerName);
+              update();
+            }
+          });
+
+          if (filter) {
+            filter.addEventListener("input", function () {
+              var q = clean(filter.value).toLowerCase();
+              qsa(".fwItem", list).forEach(function (row) {
+                var t = row.textContent.toLowerCase();
+                row.style.display = (!q || t.indexOf(q) !== -1) ? "" : "none";
+              });
+            });
+          }
+
+          // click outside closes
+          document.addEventListener("mousedown", function (e) {
+            if (!root.classList.contains("open")) return;
+            if (root.contains(e.target)) return;
+            close();
+          });
+
+          // escape closes
+          document.addEventListener("keydown", function (e) {
+            if (e.key !== "Escape") return;
+            if (!root.classList.contains("open")) return;
+            close();
+          });
+
+          // initial render
+          renderChips(pickerName);
+        }
+
+        function mount() {
+          qsa(".fwPicker[data-picker]").forEach(mountPicker);
+
+          qs("#fw_limit").addEventListener("change", update);
+
+          qs("#fw_copy_url").addEventListener("click", function (e) {
+            e.preventDefault();
+            var url = qs("#fw_url").textContent || "";
+            var btn = qs("#fw_copy_url");
+            var old = btn.textContent;
+            copyText(url).then(function () {
+              btn.textContent = "Copied";
+              setTimeout(function () { btn.textContent = old; }, 900);
+            });
+          });
+
+          qs("#fw_copy_curl").addEventListener("click", function (e) {
+            e.preventDefault();
+            var curl = qs("#fw_curl").textContent || "";
+            var btn = qs("#fw_copy_curl");
+            var old = btn.textContent;
+            copyText(curl).then(function () {
+              btn.textContent = "Copied";
+              setTimeout(function () { btn.textContent = old; }, 900);
+            });
+          });
+
+          update();
+        }
+
+        document.addEventListener("DOMContentLoaded", mount);
+      })();
+    </script>
+  </body>
+</html>

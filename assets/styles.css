@@ -440,6 +440,121 @@ p{ line-height: 1.75; margin: 12px 0 0; }
   color: rgba(11,18,32,.86);
 }
 
+/* ---------- Chips (audience badges) ---------- */
+/* A slightly more premium “Clay x BW” pill: subtle color wash + crisp border */
+:root{
+  /* Chip palette (very light, so it pops without getting loud) */
+   /* Chip palette (very light, so it pops without getting loud) */
+  --chipBg: rgba(15,23,42,.035);
+  --chipBorder: rgba(15,23,42,.10);
+  --chipText: rgba(11,18,32,.86);
+
+  --chipBlueBg: rgba(10,102,194,.08);
+  --chipBlueBorder: rgba(10,102,194,.18);
+  --chipBlueText: #063a6b;
+
+  --chipGreenBg: rgba(16,185,129,.10);
+  --chipGreenBorder: rgba(16,185,129,.22);
+  --chipGreenText: rgba(5,83,65,.92);
+
+  --chipAmberBg: rgba(245,158,11,.12);
+  --chipAmberBorder: rgba(245,158,11,.22);
+  --chipAmberText: rgba(102,60,0,.92);
+
+  --chipVioletBg: rgba(139,92,246,.10);
+  --chipVioletBorder: rgba(139,92,246,.22);
+  --chipVioletText: rgba(54,26,121,.92);
+}
+
+/* ---------- Chips (audience badges) ---------- */
+/* Premium “Clay x BW” pill: subtle color wash + crisp border */
+
+.chip{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--chipBorder);
+  background: var(--chipBg);
+  color: var(--chipText);
+  font-size: 12.5px;
+  font-weight: 650;
+  letter-spacing: -0.005em;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 1px 0 rgba(15,23,42,.04);
+  user-select: none;
+}
+
+/* Micro-dot (subtle) */
+.chip::before{
+  content:"";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(11,18,32,.22);
+  margin-right: 8px;
+}
+
+/* Gentle hover — should not feel like a button */
+.chip:hover{
+  border-color: rgba(15,23,42,.14);
+  background: rgba(15,23,42,.05);
+}
+
+/* Variant chips via data attributes */
+.chip[data-audience="markets"]{
+  background: var(--chipBlueBg);
+  border-color: var(--chipBlueBorder);
+  color: var(--chipBlueText);
+}
+.chip[data-audience="markets"]::before{ background: rgba(10,102,194,.55); }
+
+.chip[data-audience="media"]{
+  background: var(--chipAmberBg);
+  border-color: var(--chipAmberBorder);
+  color: var(--chipAmberText);
+}
+.chip[data-audience="media"]::before{ background: rgba(245,158,11,.65); }
+
+.chip[data-audience="regulatory"]{
+  background: var(--chipVioletBg);
+  border-color: var(--chipVioletBorder);
+  color: var(--chipVioletText);
+}
+.chip[data-audience="regulatory"]::before{ background: rgba(139,92,246,.55); }
+
+.chip[data-audience="tech"]{
+  background: var(--chipGreenBg);
+  border-color: var(--chipGreenBorder);
+  color: var(--chipGreenText);
+}
+.chip[data-audience="tech"]::before{ background: rgba(16,185,129,.60); }
+
+/* Chip groups (optional utility) */
+.chipRow{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* Mobile */
+@media (max-width: 520px){
+  .chip{
+    height: 24px;
+    padding: 0 9px;
+    font-size: 12px;
+  }
+  .chip::before{
+    width: 5px;
+    height: 5px;
+    margin-right: 7px;
+  }
+}
+
 /* ---------- CTA rows (customer-facing) ---------- */
 
 .ctaList{
@@ -561,4 +676,148 @@ p{ line-height: 1.75; margin: 12px 0 0; }
     white-space: normal;
   }
   code, pre{ font-size: 0.9em; }
+}
+
+/* ---------- Compact builder bar ---------- */
+.fwBar{
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: 0 1px 0 rgba(15,23,42,.05);
+  padding: 14px;
+}
+
+.fwBarHead{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.fwBarTitle{
+  font-weight: 850;
+  letter-spacing: -0.015em;
+}
+.fwBarSub{
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.fwBarRow{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.fwCtrl{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  min-height: 38px;
+}
+.fwCtrl label{
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+.fwCtrl select{
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-weight: 650;
+  font-size: 13px;
+  min-width: 160px;
+  padding: 0;
+}
+
+.fwCtrlSlim select{ min-width: 120px; }
+
+.fwUrl{
+  margin-top: 12px;
+  border-top: 1px solid var(--border2);
+  padding-top: 12px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 12px;
+  flex-wrap:wrap;
+}
+.fwUrlA{
+  display:block;
+  font-weight: 650;
+  margin-top: 6px;
+}
+.fwUrlMeta{
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.fwBarActions{
+  display:flex;
+  gap: 8px;
+  flex-wrap:wrap;
+}
+
+@media (max-width: 520px){
+  .fwCtrl{ width: 100%; justify-content:space-between; }
+  .fwCtrl select{ min-width: 0; width: 55%; text-align:right; }
+}
+
+/* RSS builder iframe */
+.fwBuilderFrame{
+  width: 100%;
+  border: 0;
+  display: block;
+  border-radius: 14px;
+  overflow: hidden; /* makes it feel native inside card */
+  background: transparent;
+  min-height: 220px; /* fallback */
+}
+
+/* --- Wizard layout --- */
+.fwWizardGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+/* Mobile: stack */
+@media (max-width: 900px) {
+  .fwWizardGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Step cards */
+.fwStep {
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  background: #fff;
+  padding: 14px;
+}
+
+/* Step 1: lighter, exploratory */
+.fwStepTest {
+  background: #ffffff;
+}
+
+/* Step 2: heavier, “production” */
+.fwStepProd {
+  background: #fcfdff;
+}
+
+/* Locked state */
+.fwStepProd[data-locked="true"] {
+  opacity: 0.6;
+  pointer-events: none;
 }

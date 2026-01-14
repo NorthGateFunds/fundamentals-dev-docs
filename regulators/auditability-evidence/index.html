@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Auditability & Evidence • Fundamentals Wire Developer Docs</title>
+
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script defer src="/assets/app.js"></script>
+
+    <meta name="fw-base" content="" />
+  </head>
+
+  <body>
+    <!-- Mobile top bar -->
+    <div class="topbar">
+      <div class="left">
+        <button class="iconBtn" data-nav-toggle aria-label="Open navigation" aria-expanded="false">
+          ☰
+        </button>
+        <div style="font-weight:700;">Fundamentals Wire</div>
+      </div>
+      <div style="color:var(--muted); font-size:12px;">Developer Docs</div>
+    </div>
+
+    <div class="scrim hidden"></div>
+
+    <div class="layout">
+      <!-- Sidebar -->
+      <aside class="sidebar" role="navigation" aria-label="Docs navigation">
+        <div class="brand">
+          <div class="dot"></div>
+          <div>
+            <div class="title">Fundamentals Wire</div>
+            <div class="subtitle">Developer Documentation</div>
+          </div>
+        </div>
+
+        <div class="nav">
+          <div class="navSection">For Integrators</div>
+          <a href="/integrators/distribution-formats/index.html">Distribution Formats</a>
+          <a href="/integrators/distribution-formats/newsml/index.html">NewsML (HTTPS Push)</a>
+          <a href="/integrators/distribution-formats/rss/index.html">RSS (Feed Builder)</a>
+          <a href="/integrators/distribution-formats/atom/index.html">Atom (Feed Builder)</a>
+
+          <div class="navSection">For Regulators &amp; Legal</div>
+          <a href="/regulators/reg-fd-compliance/index.html">Reg FD Compliance</a>
+          <a href="/regulators/auditability-evidence/index.html" class="active">Auditability &amp; Evidence</a>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <main class="main">
+        <div class="content">
+          <h1 class="h1">Auditability &amp; Evidence</h1>
+
+          <p class="lead">
+            Auditability is a foundational requirement of modern public-company disclosure.
+            Regulators, auditors, and counsel must be able to determine <em>what</em> information was released,
+            <em>when</em> it was released, <em>how</em> it was disseminated, and whether the record has remained intact over time.
+          </p>
+
+          <p>
+            Fundamentals Wire is designed to support issuer disclosure workflows by producing
+            verifiable, timestamped distribution artifacts that may assist issuers in demonstrating
+            compliance with applicable securities laws and internal disclosure controls.
+            The platform does not make legal determinations and does not substitute for issuer judgment,
+            legal advice, or regulatory review.
+          </p>
+
+          <div class="card">
+            <h3>Why Auditability Matters in Public Disclosure</h3>
+
+            <p>
+              U.S. securities regulation places significant emphasis not only on <em>whether</em> material information
+              was disclosed, but also on the issuer’s ability to substantiate the manner and timing of that disclosure.
+              In enforcement actions and examinations, the absence of reliable records can itself become a point of scrutiny.
+            </p>
+
+            <p>
+              The SEC has repeatedly emphasized that issuers must maintain effective disclosure controls and procedures,
+              including mechanisms that allow management to evaluate the timeliness and completeness of public disclosures.
+              See, for example, Exchange Act Rules 13a-15 and 15d-15 and related Commission guidance
+              (<a href="https://www.sec.gov/rules/final/33-8124.htm" target="_blank" rel="noreferrer">SEC Release No. 33-8124</a>).
+            </p>
+
+            <p>
+              In this context, auditability refers to the practical ability to reconstruct a disclosure event after the fact:
+              identifying the distributed content, its public availability, and the channels through which it was made accessible.
+            </p>
+          </div>
+
+          <div class="card">
+            <h3>Evidence Produced by Fundamentals Wire</h3>
+
+            <p>
+              Fundamentals Wire generates and preserves structured distribution artifacts at defined points
+              in the disclosure lifecycle. These artifacts are intended to function as contemporaneous records
+              of dissemination activity and may be retained by issuers as part of their broader compliance documentation.
+            </p>
+
+            <p>
+              Depending on the distribution format used, such artifacts may include immutable message identifiers,
+              canonical URLs, publication timestamps, and machine-readable representations of the disclosed content.
+              For example, RSS and Atom feeds expose stable item identifiers and update timestamps, while NewsML
+              push distributions produce structured payloads suitable for downstream archiving.
+            </p>
+
+            <p>
+              These records are designed to be reproducible and referenceable over time, supporting internal review,
+              audit inquiries, or regulatory requests without reliance on transient interfaces or third-party screenshots.
+            </p>
+          </div>
+
+          <div class="card">
+            <h3>Relationship to SEC Recordkeeping and Enforcement</h3>
+
+            <p>
+              While Regulation FD does not mandate a specific dissemination technology, enforcement history makes clear
+              that the SEC evaluates disclosure practices holistically, including the issuer’s ability to demonstrate
+              that public dissemination occurred as represented.
+            </p>
+
+            <p>
+              In selective disclosure and insider trading cases, the Commission has examined contemporaneous records
+              such as press releases, wire timestamps, webcast logs, and archived disclosures to assess compliance
+              (<a href="https://www.sec.gov/litigation/litreleases" target="_blank" rel="noreferrer">SEC Litigation Releases</a>).
+              Systems that generate durable, timestamped records may therefore assist issuers in responding to such inquiries.
+            </p>
+
+            <p>
+              Fundamentals Wire is designed to align with these evidentiary expectations by emphasizing traceability,
+              immutability of published artifacts, and consistent public access paths.
+            </p>
+          </div>
+
+          <div class="card">
+            <h3>Interaction with RSS, Atom, and NewsML</h3>
+
+            <p>
+              Auditability in Fundamentals Wire is format-agnostic but format-aware.
+              Different distribution mechanisms serve different compliance and operational needs.
+            </p>
+
+            <p>
+              RSS feeds provide a widely recognized, time-ordered public index of disclosures suitable for monitoring
+              and alerting systems. Atom feeds extend this model with stable identifiers and XHTML-safe content structures,
+              which may be advantageous for archival and indexing use cases.
+            </p>
+
+            <p>
+              For issuers requiring higher-fidelity records or regulator-facing distribution workflows,
+              NewsML push distributions offer structured, schema-validated payloads commonly used by
+              professional newswires and market infrastructure providers.
+            </p>
+
+            <p>
+              Issuers may use one or more of these formats concurrently, depending on their disclosure controls,
+              investor relations strategy, and legal guidance.
+            </p>
+          </div>
+
+          <div class="card">
+            <h3>Important Limitations</h3>
+
+            <p>
+              Fundamentals Wire does not determine whether information is material, whether a disclosure is required,
+              or whether a particular dissemination method satisfies an issuer’s legal obligations.
+              Those determinations remain the responsibility of the issuer and its advisors.
+            </p>
+
+            <p>
+              Use of the platform does not create a presumption of regulatory compliance.
+              Rather, the system is intended to support disciplined disclosure practices by producing
+              consistent, reviewable records that may be incorporated into an issuer’s overall compliance framework.
+            </p>
+          </div>
+
+          <div class="footerNote">
+            Auditability supports accountability. For requirements governing what must be disclosed and when,
+            see <a href="/regulators/reg-fd-compliance/index.html">Reg FD Compliance</a>.
+            For how disclosures are distributed across channels, see
+            <a href="/integrators/distribution-formats/index.html">Distribution Formats</a>.
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
