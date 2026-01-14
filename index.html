@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Developer Docs • Fundamentals Wire</title>
+
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script defer src="/assets/app.js"></script>
+
+    <!-- Optional: if you deploy docs on a different base than origin, set it here -->
+    <meta name="fw-base" content="" />
+
+    <style>
+      /* Page-local polish to match the RSS / Atom card tone without touching global CSS */
+      .heroNote {
+        margin-top: 10px;
+        color: var(--muted);
+        max-width: 70ch;
+      }
+
+      .tocCard {
+        margin-top: 14px;
+      }
+
+      .tocGrid {
+        margin-top: 12px;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 10px;
+      }
+
+      .tocItem {
+        grid-column: span 6;
+        border: 1px solid var(--border2);
+        border-radius: 14px;
+        background: #fff;
+        padding: 12px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        text-decoration: none;
+        color: inherit;
+        box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+      }
+
+      .tocIcon {
+        width: 34px;
+        height: 34px;
+        border-radius: 12px;
+        border: 1px solid var(--border2);
+        display: grid;
+        place-items: center;
+        font-weight: 900;
+        color: rgba(15, 23, 42, 0.72);
+        background: rgba(15, 23, 42, 0.02);
+        flex: 0 0 auto;
+      }
+
+      .tocTitle {
+        font-weight: 850;
+        letter-spacing: -0.01em;
+        line-height: 1.2;
+      }
+
+      .tocDesc {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 13.5px;
+        line-height: 1.45;
+      }
+
+      .pillRow {
+        margin-top: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--border2);
+        border-radius: 999px;
+        padding: 7px 10px;
+        background: #fff;
+        color: var(--text);
+        font-size: 13px;
+        text-decoration: none;
+      }
+
+      .pill code {
+        font-size: 12.5px;
+        padding: 1px 6px;
+        border-radius: 999px;
+        border: 1px solid var(--border2);
+        background: rgba(15, 23, 42, 0.02);
+      }
+
+      .sectionTitle {
+        margin: 0;
+      }
+
+      .para {
+        margin: 10px 0 0;
+        color: var(--text);
+        max-width: 78ch;
+      }
+
+      .callout {
+        margin-top: 14px;
+        border: 1px solid var(--border2);
+        border-radius: 14px;
+        background: rgba(15, 23, 42, 0.02);
+        padding: 12px;
+      }
+
+      .calloutTitle {
+        font-weight: 850;
+        letter-spacing: -0.01em;
+        margin: 0;
+      }
+
+      .calloutText {
+        margin: 6px 0 0;
+        color: var(--muted);
+        line-height: 1.55;
+        max-width: 80ch;
+      }
+
+      .miniList {
+        margin: 10px 0 0;
+        padding-left: 18px;
+        color: var(--muted);
+        line-height: 1.55;
+        max-width: 85ch;
+      }
+
+      .miniList li {
+        margin: 6px 0;
+      }
+
+      @media (max-width: 860px) {
+        .tocItem {
+          grid-column: span 12;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Mobile top bar -->
+    <div class="topbar">
+      <div class="left">
+        <button class="iconBtn" data-nav-toggle aria-label="Open navigation" aria-expanded="false">
+          ☰
+        </button>
+        <div style="font-weight:700;">Fundamentals Wire</div>
+      </div>
+      <div style="color:var(--muted); font-size:12px;">Developer Docs</div>
+    </div>
+
+    <div class="scrim hidden"></div>
+
+    <div class="layout">
+      <!-- Sidebar -->
+      <aside class="sidebar" role="navigation" aria-label="Docs navigation">
+        <div class="brand">
+          <div class="dot"></div>
+          <div>
+            <div class="title">Fundamentals Wire</div>
+            <div class="subtitle">Developer Documentation</div>
+          </div>
+        </div>
+
+        <div class="nav">
+          <div class="navSection">For Integrators</div>
+          <a href="/integrators/distribution-formats/index.html">Distribution Formats</a>
+          <a href="/integrators/distribution-formats/newsml/index.html">NewsML (HTTPS Push)</a>
+          <a href="/integrators/distribution-formats/rss/index.html">RSS (Feed Builder)</a>
+          <a href="/integrators/distribution-formats/atom/index.html">Atom (Feed Builder)</a>
+
+          <div class="navSection">For Regulators &amp; Legal</div>
+          <a href="/regulators/reg-fd-compliance/index.html">Reg FD Compliance</a>
+          <a href="/regulators/auditability-evidence/index.html">Auditability &amp; Evidence</a>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <main class="main">
+        <div class="content">
+          <h1 class="h1">Fundamentals Wire Developer Documentation</h1>
+
+          <p class="lead">
+            Documentation for disclosure distribution formats, public access surfaces, and evidence-grade record integrity.
+          </p>
+
+          <p class="heroNote">
+            These pages are written for integrators building ingestion and publishing workflows, and for issuer counsel, newsroom editors,
+            and journalists evaluating how disclosures are disseminated and preserved.
+          </p>
+
+          <!-- Quick links / endpoints -->
+          <div class="card tocCard">
+            <h3 class="sectionTitle">Quick access</h3>
+            <div class="pillRow" aria-label="Quick access links">
+              <a class="pill" href="/feeds/rss.xml" target="_blank" rel="noreferrer">
+                RSS feed <code>/feeds/rss.xml</code>
+              </a>
+              <a class="pill" href="/feeds/atom.xml" target="_blank" rel="noreferrer">
+                Atom feed <code>/feeds/atom.xml</code>
+              </a>
+              <a class="pill" href="/integrators/distribution-formats/newsml/index.html">
+                NewsML <code>HTTPS push</code>
+              </a>
+            </div>
+          </div>
+
+          <!-- Overview -->
+          <div class="card" style="margin-top:14px;">
+            <h3 class="sectionTitle">Disclosure, distribution, and public access</h3>
+
+            <p class="para">
+              Fundamentals Wire is a disclosure and distribution platform designed to support how public information is released,
+              accessed, and preserved in modern capital markets. The system provides multiple standardized publication surfaces,
+              each serving a distinct audience and use case, while maintaining a single canonical public release.
+            </p>
+
+            <p class="para">
+              The platform is built around a simple principle: information should be disclosed once, publicly, and accessibly, and then
+              distributed in forms appropriate for regulators, investors, journalists, and downstream systems.
+            </p>
+
+            <div class="callout" role="note" aria-label="Practical usage">
+              <p class="calloutTitle">How this is used in practice</p>
+              <p class="calloutText">
+                Public-company disclosures are consumed differently depending on the reader. Investors and analysts monitor releases
+                for market impact. Journalists evaluate releases for newsworthiness and attribution. Regulators and counsel focus on
+                timing, access, and record integrity. Fundamentals Wire is designed to accommodate these overlapping needs without
+                fragmenting the underlying disclosure: content is published once, then made available simultaneously through multiple
+                formats, all pointing back to the same public source.
+              </p>
+            </div>
+          </div>
+
+          <!-- Publication surfaces -->
+          <div class="card" style="margin-top:14px;">
+            <h3 class="sectionTitle">Publication surfaces</h3>
+
+            <p class="para">
+              Fundamentals Wire supports three primary dissemination formats. Each is purpose-built and commonly used in professional
+              disclosure environments.
+            </p>
+
+            <div class="tocGrid" style="margin-top:12px;">
+              <a class="tocItem" href="/integrators/distribution-formats/rss/index.html" aria-label="RSS feed builder">
+                <div class="tocIcon">R</div>
+                <div>
+                  <div class="tocTitle">RSS (Feed Builder)</div>
+                  <div class="tocDesc">
+                    Lightweight discovery and monitoring. Common in newsroom tooling, alerting systems, and indexing pipelines. Items link to the
+                    canonical public release.
+                  </div>
+                </div>
+              </a>
+
+              <a class="tocItem" href="/integrators/distribution-formats/atom/index.html" aria-label="Atom feed builder">
+                <div class="tocIcon">A</div>
+                <div>
+                  <div class="tocTitle">Atom (Feed Builder)</div>
+                  <div class="tocDesc">
+                    Structured syndication for stable identifiers and XHTML-safe content. Often used by indexers, research platforms, and archival ingestion.
+                  </div>
+                </div>
+              </a>
+
+              <a class="tocItem" href="/integrators/distribution-formats/newsml/index.html" aria-label="NewsML HTTPS push">
+                <div class="tocIcon">N</div>
+                <div>
+                  <div class="tocTitle">NewsML (HTTPS Push)</div>
+                  <div class="tocDesc">
+                    Schema-driven distribution intended for compliance-oriented workflows and institutional interoperability, with a controlled delivery mechanism.
+                  </div>
+                </div>
+              </a>
+
+              <a class="tocItem" href="/regulators/auditability-evidence/index.html" aria-label="Auditability and evidence">
+                <div class="tocIcon">E</div>
+                <div>
+                  <div class="tocTitle">Auditability &amp; Evidence</div>
+                  <div class="tocDesc">
+                    Record integrity and verification: what is preserved, what is immutable, and how to validate a disclosure after publication.
+                  </div>
+                </div>
+              </a>
+            </div>
+
+            <div class="callout" role="note" aria-label="Choosing formats">
+              <p class="calloutTitle">Choosing the appropriate format</p>
+              <p class="calloutText">
+                In practice, issuers and consumers often rely on more than one surface at the same time:
+                RSS for broad visibility and monitoring, Atom for structured ingestion and indexing, and NewsML for compliance-grade workflows.
+                All formats reference the same underlying public release to maintain consistency across audiences.
+              </p>
+            </div>
+          </div>
+
+          <!-- Reg FD -->
+          <div class="card" style="margin-top:14px;">
+            <h3 class="sectionTitle">Regulation FD context</h3>
+
+            <p class="para">
+              Fundamentals Wire is designed to align with recognized public dissemination practices under U.S. securities law, including
+              Regulation Fair Disclosure (Reg FD). The platform enables issuers to make information publicly available through channels
+              that are broadly accessible and commonly used in the market.
+            </p>
+
+            <p class="para">
+              Responsibility for Reg FD compliance remains with the issuer. Determinations of materiality, timing, and disclosure obligations
+              are legal judgments made by issuers and their advisors. Fundamentals Wire does not make materiality assessments and does not
+              substitute for issuer disclosure controls.
+            </p>
+
+            <div class="pillRow" aria-label="Reg FD links">
+              <a class="pill" href="/regulators/reg-fd-compliance/index.html">
+                Read: Reg FD Compliance
+              </a>
+              <a class="pill" href="/integrators/distribution-formats/rss/index.html">
+                RSS distribution surface
+              </a>
+              <a class="pill" href="/integrators/distribution-formats/atom/index.html">
+                Atom distribution surface
+              </a>
+              <a class="pill" href="/integrators/distribution-formats/newsml/index.html">
+                NewsML distribution surface
+              </a>
+            </div>
+          </div>
+
+          <!-- Newsroom/journalist use -->
+          <div class="card" style="margin-top:14px;">
+            <h3 class="sectionTitle">Editorial and journalistic use</h3>
+
+            <p class="para">
+              For journalists and editors, Fundamentals Wire functions as a public source with stable URLs, clear attribution, and consistent metadata.
+              RSS and Atom are designed to integrate into newsroom monitoring tools without requiring specialized access.
+            </p>
+
+            <ul class="miniList">
+              <li><strong>Monitoring:</strong> Use RSS or Atom in a feed reader, Slack/RSS bridges, or internal alerting.</li>
+              <li><strong>Attribution and verification:</strong> Follow the canonical link for the authoritative public release.</li>
+              <li><strong>Archiving:</strong> Atom is typically preferred for structured ingestion; NewsML is appropriate for schema-driven preservation.</li>
+            </ul>
+          </div>
+
+          <div class="footerNote">
+            Start with RSS or Atom for monitoring and ingestion. Use NewsML for structured distribution workflows, and Auditability &amp; Evidence for verification context.
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
