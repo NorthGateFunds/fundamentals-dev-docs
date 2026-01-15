@@ -1,1 +1,6 @@
 .vercel
+
+# local env (never commit)
+.env.local
+# vercel local link data
+.vercel/
