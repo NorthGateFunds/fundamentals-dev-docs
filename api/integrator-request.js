@@ -255,6 +255,68 @@ function pickHeaders(h) {
   return out;
 }
 
+/* ---------------- NEW: persist delivery attempts ---------------- */
+
+async function postDeliveryAttempt({
+  SUPABASE_URL,
+  SERVICE_ROLE,
+  request_id,
+  delivery_env,
+  endpoint_url,
+  attempted,
+  delivered,
+  http_status,
+  response_headers,
+  response_snippet,
+  error,
+  error_detail,
+  timeout_ms,
+  sent_bytes,
+  newsml_news_item_id,
+}) {
+  // Never block user response on logging; best-effort only.
+  try {
+    // If you want this scoped to "wire" explicitly, set REST schema header.
+    // Many setups default to "public"; if your table is in "wire", you either:
+    //  1) expose it via PostgREST schema config, or
+    //  2) create an RPC SECURITY DEFINER to insert attempts.
+    //
+    // This code assumes the table is reachable at /rest/v1/integrator_delivery_attempts
+    // (as you described: wire.integrator_delivery_attempts).
+    await fetch(`${SUPABASE_URL}/rest/v1/integrator_delivery_attempts`, {
+      method: "POST",
+      headers: {
+        apikey: SERVICE_ROLE,
+        authorization: `Bearer ${SERVICE_ROLE}`,
+        "content-type": "application/json",
+        prefer: "return=minimal",
+        // Uncomment if your Supabase PostgREST honors per-request schema:
+        // "Accept-Profile": "wire",
+        // "Content-Profile": "wire",
+      },
+      body: JSON.stringify({
+        request_id,
+        delivery_env: delivery_env || null,
+        endpoint_url: endpoint_url || null,
+        attempted: !!attempted,
+        delivered: delivered === null || delivered === undefined ? null : !!delivered,
+        http_status: http_status ?? null,
+        response_headers: response_headers || null,
+        response_snippet: response_snippet || null,
+        error: error || null,
+        error_detail: error_detail || null,
+        timeout_ms: timeout_ms ?? null,
+        sent_bytes: sent_bytes ?? null,
+        newsml_news_item_id: newsml_news_item_id || null,
+        handler_version: HANDLER_VERSION,
+        created_at: new Date().toISOString(),
+      }),
+    }).catch(() => {});
+  } catch {
+    // swallow
+  }
+}
+
 /* ---------------- handler ---------------- */
 
 export default async function handler(req, res) {
@@ -397,13 +459,34 @@ export default async function handler(req, res) {
       clearTimeout(t);
       const msg = String(e && e.message ? e.message : e || "");
       const isAbort = msg.toLowerCase().includes("abort");
+      const errCode = isAbort ? "endpoint_timeout" : "endpoint_unreachable";
+
+      // NEW: persist attempt (failure)
+      await postDeliveryAttempt({
+        SUPABASE_URL,
+        SERVICE_ROLE,
+        request_id: id,
+        delivery_env,
+        endpoint_url,
+        attempted: true,
+        delivered: false,
+        http_status: null,
+        response_headers: null,
+        response_snippet: null,
+        error: errCode,
+        error_detail: msg.slice(0, 200),
+        timeout_ms: timeoutMs,
+        sent_bytes: Buffer.byteLength(xml, "utf8"),
+        newsml_news_item_id: newsItemId,
+      });
+
       return send(res, 200, {
         ok: true,
         id,
         attempted: true,
         delivered: false,
         endpoint: endpoint_url,
-        error: isAbort ? "endpoint_timeout" : "endpoint_unreachable",
+        error: errCode,
         error_detail: msg.slice(0, 200),
         timeout_ms: timeoutMs,
         sent_bytes: Buffer.byteLength(xml, "utf8"),
@@ -416,6 +499,25 @@ export default async function handler(req, res) {
 
     const respText = await outRes.text().catch(() => "");
     const snippet = String(respText || "").slice(0, 300);
+
+    // NEW: persist attempt (success or non-2xx)
+    await postDeliveryAttempt({
+      SUPABASE_URL,
+      SERVICE_ROLE,
+      request_id: id,
+      delivery_env,
+      endpoint_url,
+      attempted: true,
+      delivered: outRes.ok,
+      http_status: outRes.status,
+      response_headers: pickHeaders(outRes.headers),
+      response_snippet: snippet,
+      error: outRes.ok ? null : "endpoint_rejected",
+      error_detail: outRes.ok ? null : `http_status=${outRes.status}`,
+      timeout_ms: timeoutMs,
+      sent_bytes: Buffer.byteLength(xml, "utf8"),
+      newsml_news_item_id: newsItemId,
+    });
 
     return send(res, 200, {
       ok: true,
