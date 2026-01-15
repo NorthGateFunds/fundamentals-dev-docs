@@ -1,13 +1,30 @@
-console.log("FW_DEBUG_LOADED integrator-accordion.js", window.location.pathname);
-// FW_BUILD_ID=2026-01-15T08:30:31.267Z
+/* assets/integrator-accordion.js */
 
-// --- FW_BASE override (injected) ---
+/*
+  Integrator accordion + HTTPS Push wizard
+  - Step 1: test delivery (push_access + delivery_env=test) and show immediate status
+  - Step 2: enable ongoing delivery (push_access + delivery_env=production)
+  - Integration form: simple "integration" request capture
+
+  UI improvements in this version:
+  - Both Step 1 + Step 2 panes are visible on load (no blank space).
+  - Step 2 is visibly "locked" until Step 1 succeeds.
+  - Step 1 supports "Resend test" (re-run test delivery as many times as needed).
+  - No hard dependency on HTML having a resend button; we inject one if missing.
+*/
+
+console.log("FW_DEBUG_LOADED integrator-accordion.js", window.location.pathname);
+
+// ---------------- Base URL override (meta-driven) ----------------
+// - Default: same-origin (""), good for Vercel.
+// - If on Cloudflare Pages (*.pages.dev), default API base to Vercel because /api lives there.
+// - Or explicitly set <meta name="fw-base" content="https://fundamentals-dev-docs.vercel.app" />
+
 const FW_BASE_META = document.querySelector('meta[name="fw-base"]');
 
-let FW_API_BASE = (FW_BASE_META && (FW_BASE_META.getAttribute("content") || "").trim()) || "";
+let FW_API_BASE =
+  (FW_BASE_META && (FW_BASE_META.getAttribute("content") || "").trim()) || "";
 
-// If we're on Cloudflare Pages (*.pages.dev), always send form traffic to Vercel,
-// because Vercel is where the serverless /api handlers live.
 try {
   const host = String(window.location.hostname || "");
   if (!FW_API_BASE && host.endsWith("pages.dev")) {
@@ -16,12 +33,13 @@ try {
 } catch {}
 
 function fwApiUrl(pathname) {
-  const p = String(pathname || "").startsWith("/") ? String(pathname || "") : "/" + String(pathname || "");
-  return (FW_API_BASE ? FW_API_BASE : "") + p;
+  const p = String(pathname || "").startsWith("/")
+    ? String(pathname || "")
+    : "/" + String(pathname || "");
+  return (FW_API_BASE ? FW_API_BASE.replace(/\/+$/, "") : "") + p;
 }
-// --- end injected ---
 
-// assets/integrator-accordion.js
+// ---------------- main bundle ----------------
 (function () {
   function qs(sel, root) {
     return (root || document).querySelector(sel);
@@ -30,38 +48,9 @@ function fwApiUrl(pathname) {
     return Array.prototype.slice.call((root || document).querySelectorAll(sel));
   }
 
-  // Base URL support:
-  // - default: same-origin (""), good for Vercel
-  // - for Cloudflare Pages: set <meta name="fw-base" content="https://fundamentals-dev-docs.vercel.app" />
-  function fwBase() {
-    var meta = document.querySelector('meta[name="fw-base"]');
-    var v = meta && meta.getAttribute("content");
-    v = (v || "").trim();
-    if (!v) return "";
-    return v.replace(/\/+$/, "");
-  }
-
-  function apiUrl(path) {
-    return fwBase() + path;
-  }
-
-  function fwBase() {
-  var m = document.querySelector('meta[name="fw-base"]');
-  var v = m && m.getAttribute("content");
-  v = (v || "").trim();
-  if (!v) return "";            // default same-origin
-  if (v.endsWith("/")) v = v.slice(0, -1);
-  return v;
-}
-
-function apiUrl(path) {
-  return fwBase() + path;       // "" + "/api/..." OR "https://xyz" + "/api/..."
-}
-
   function safeClosest(el, sel) {
     if (!el) return null;
     if (el.closest) return el.closest(sel);
-    // very old fallback
     while (el && el.nodeType === 1) {
       if (matches(el, sel)) return el;
       el = el.parentNode;
@@ -115,10 +104,8 @@ function apiUrl(path) {
     panel.setAttribute("aria-hidden", "false");
     setAriaExpanded(key, true);
 
-    // scroll into view nicely
     panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
-    // focus first input
     var first = qs("input, textarea, select", panel);
     if (first) {
       setTimeout(function () {
@@ -133,7 +120,6 @@ function apiUrl(path) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       return navigator.clipboard.writeText(text);
     }
-    // fallback
     var ta = document.createElement("textarea");
     ta.value = text;
     ta.style.position = "fixed";
@@ -147,11 +133,8 @@ function apiUrl(path) {
     return Promise.resolve();
   }
 
-  // NOTE:
-  // This hits /api/integrator-request which MUST be backed by a real server.
-  // On Cloudflare Pages, set <meta name="fw-base" content="https://fundamentals-dev-docs.vercel.app" />
   async function submitIntegratorRequest(_kind, payload) {
-    var url = apiUrl("/api/integrator-request");
+    var url = fwApiUrl("/api/integrator-request");
 
     var res = await fetch(url, {
       method: "POST",
@@ -164,7 +147,7 @@ function apiUrl(path) {
     });
 
     if (!res.ok || !json.ok) throw new Error(json.error || "submit_failed");
-    return json; // return the whole object so UI can show delivery status
+    return json;
   }
 
   function setStatus(form, msg) {
@@ -186,7 +169,7 @@ function apiUrl(path) {
     }
   }
 
-  // ---------- Wizard helpers (Option B) ----------
+  // ---------- Wizard helpers (HTTPS Push) ----------
 
   function mountWizard(panel) {
     var root = qs("[data-fw-wizard]", panel) || panel;
@@ -206,25 +189,79 @@ function apiUrl(path) {
     var badge1 = qs('[data-fw-badge="1"]', root);
     var badge2 = qs('[data-fw-badge="2"]', root);
 
-    var step2Lock = qs("[data-fw-step2-lock]", root) || qs("#fwStep2Locked", root);
-    var step2Submit = qs("#fwEnableBtn", root) || qs('[data-fw-step2-submit]', root);
-    var step2Ready = qs("#fw_ready", root) || qs('[data-fw-step2-ready]', root);
+    var step2Lock =
+      qs("[data-fw-step2-lock]", root) || qs("#fwStep2Locked", root);
+    var step2Submit =
+      qs("#fwEnableBtn", root) || qs('[data-fw-step2-submit]', root);
+    var step2Ready =
+      qs("#fw_ready", root) || qs('[data-fw-step2-ready]', root);
 
     var testForm = qs("#fwTestForm", root) || qs('[data-fw-step1-form]', root);
-    var enableForm = qs("#fwEnableForm", root) || qs('[data-fw-step2-form]', root);
+    var enableForm =
+      qs("#fwEnableForm", root) || qs('[data-fw-step2-form]', root);
 
     var lastEmail = "";
     var unlocked = false;
 
+    // Visually + functionally disable Step 2 fields when locked.
+    function setStep2Disabled(disabled) {
+      if (!step2View) return;
+
+      // If you have CSS keyed off this, it’s useful.
+      root.setAttribute("data-fw-unlocked", disabled ? "false" : "true");
+
+      // Disable all interactive controls in step 2 (except Close/Cancel buttons if present).
+      var controls = qsa(
+        'input, textarea, select, button',
+        step2View
+      ).filter(function (el) {
+        // allow buttons explicitly tagged as cancel/close
+        if (matches(el, "[data-fw-cancel]")) return false;
+        if (matches(el, '[data-close-accordion="pushAccess"]')) return false;
+        return true;
+      });
+
+      controls.forEach(function (el) {
+        try {
+          el.disabled = !!disabled;
+        } catch (e) {}
+      });
+
+      // Ensure primary submit follows the same rule
+      if (step2Submit) {
+        try {
+          step2Submit.disabled = !!disabled;
+        } catch (e) {}
+      }
+    }
+
     function setActiveStep(n) {
-      if (step1View) step1View.style.display = n === 1 ? "" : "none";
-      if (step2View) step2View.style.display = n === 2 ? "" : "none";
+      // NEW behavior: always render both panes to avoid blank space.
+      if (step1View) step1View.style.display = "";
+      if (step2View) step2View.style.display = "";
 
-      if (step1Item) step1Item.setAttribute("data-active", n === 1 ? "true" : "false");
-      if (step2Item) step2Item.setAttribute("data-active", n === 2 ? "true" : "false");
-      if (step1Item) step1Item.setAttribute("aria-current", n === 1 ? "step" : "false");
-      if (step2Item) step2Item.setAttribute("aria-current", n === 2 ? "step" : "false");
+      if (step1Item)
+        step1Item.setAttribute("data-active", n === 1 ? "true" : "false");
+      if (step2Item)
+        step2Item.setAttribute("data-active", n === 2 ? "true" : "false");
 
+      if (step1Item)
+        step1Item.setAttribute("aria-current", n === 1 ? "step" : "false");
+      if (step2Item)
+        step2Item.setAttribute("aria-current", n === 2 ? "step" : "false");
+
+      // If user tries to switch to step 2 while locked, keep them on step 1.
+      if (n === 2 && !unlocked) {
+        if (testForm)
+          setStatus(testForm, "Run the test to unlock ongoing deliveries.");
+        n = 1;
+        if (step1Item)
+          step1Item.setAttribute("data-active", "true");
+        if (step2Item)
+          step2Item.setAttribute("data-active", "false");
+      }
+
+      // Focus first input in the requested view.
       var view = n === 1 ? step1View : step2View;
       if (view) {
         var first = qs("input, textarea, select, button", view);
@@ -239,16 +276,21 @@ function apiUrl(path) {
     }
 
     function updateStep2Availability() {
-      var ok = unlocked && step2Ready && step2Ready.checked;
+      // NEW: if the readiness checkbox is missing, allow submit once unlocked.
+      var ok = unlocked && (!step2Ready || step2Ready.checked);
       if (step2Submit) step2Submit.disabled = !ok;
     }
 
     function setUnlocked(v) {
       unlocked = !!v;
 
+      // lock message visibility
       if (step2Lock) step2Lock.style.display = unlocked ? "none" : "";
-      if (step2Item) step2Item.setAttribute("data-locked", unlocked ? "false" : "true");
 
+      if (step2Item)
+        step2Item.setAttribute("data-locked", unlocked ? "false" : "true");
+
+      setStep2Disabled(!unlocked);
       updateStep2Availability();
     }
 
@@ -267,77 +309,145 @@ function apiUrl(path) {
     if (step2Item) {
       step2Item.addEventListener("click", function (e) {
         e.preventDefault();
-        if (!unlocked) {
-          if (testForm) setStatus(testForm, "Run the test to unlock permanent deliveries.");
-          setActiveStep(1);
-          return;
-        }
         setActiveStep(2);
       });
     }
 
     if (step2Ready) step2Ready.addEventListener("change", updateStep2Availability);
 
-    // Step 1 submit
+    // ---------------- Step 1: add resend support ----------------
+
+    function ensureResendButton() {
+      if (!testForm) return null;
+
+      // If the markup already has it, use it.
+      var btn = qs("#fwResendTest", testForm);
+      if (btn) return btn;
+
+      // Otherwise inject a secondary button next to the submit button.
+      var submitBtn = qs('button[type="submit"]', testForm);
+      if (!submitBtn) return null;
+
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.id = "fwResendTest";
+      btn.textContent = "Resend test";
+      btn.style.marginLeft = "10px";
+      btn.style.display = "inline-flex";
+      btn.style.alignItems = "center";
+      btn.style.justifyContent = "center";
+
+      // Keep it visually secondary without requiring global CSS changes.
+      btn.style.padding = submitBtn.style.padding || "";
+      btn.style.borderRadius = submitBtn.style.borderRadius || "";
+      btn.style.border = "1px solid var(--border, #e2e8f0)";
+      btn.style.background = "#fff";
+      btn.style.color = "inherit";
+      btn.style.cursor = "pointer";
+
+      // Hide until first attempt (per your UX request).
+      btn.hidden = true;
+
+      submitBtn.parentNode.insertBefore(btn, submitBtn.nextSibling);
+      return btn;
+    }
+
+    var resendBtn = ensureResendButton();
+
+    async function runTestDelivery() {
+      if (!testForm) return;
+
+      setStatus(testForm, "");
+      disableSubmit(testForm, true, "Sending…");
+      if (resendBtn) resendBtn.disabled = true;
+
+      var emailEl =
+        qs("#fw_email", testForm) ||
+        qs('input[name="email"]', testForm) ||
+        qs("#fw_s1_email", testForm);
+
+      var endpointEl =
+        qs("#fw_test_endpoint", testForm) ||
+        qs("#fw_endpoint", testForm) ||
+        qs('input[name="endpoint_url"]', testForm);
+
+      var email = (emailEl && emailEl.value ? emailEl.value : "").trim();
+      var endpoint = (endpointEl && endpointEl.value ? endpointEl.value : "").trim();
+
+      lastEmail = email;
+
+      try {
+        var out = await submitIntegratorRequest("push_access", {
+          kind: "push_access",
+          email: email,
+          endpoint_url: endpoint,
+          delivery_env: "test",
+          notes: "Docs: HTTPS Push Step 1 (test delivery).",
+          source_path: window.location.pathname,
+        });
+
+        // After the first attempt, reveal resend.
+        if (resendBtn) resendBtn.hidden = false;
+
+        // If backend returns delivery status, show it immediately.
+        if (out && out.attempted) {
+          if (out.delivered) {
+            setStatus(
+              testForm,
+              "Test delivery succeeded (HTTP " +
+                out.http_status +
+                "). Step 2 is unlocked."
+            );
+            setUnlocked(true);
+            setActiveStep(2);
+          } else {
+            setStatus(
+              testForm,
+              "Test delivery failed. Fix your endpoint and click Resend test."
+            );
+            setUnlocked(false);
+            setActiveStep(1);
+          }
+        } else {
+          // If backend doesn’t return delivery info, keep it simple.
+          setStatus(testForm, "Submitted. Test delivery is being sent now.");
+          // Don’t unlock unless we know it succeeded.
+          setUnlocked(false);
+          setActiveStep(1);
+        }
+      } catch (err) {
+        if (resendBtn) resendBtn.hidden = false;
+        setUnlocked(false);
+        setStatus(testForm, "Couldn’t submit. Check inputs and resend.");
+        setActiveStep(1);
+      } finally {
+        disableSubmit(testForm, false);
+        if (resendBtn) resendBtn.disabled = false;
+        updateStep2Availability();
+      }
+    }
+
+    // Step 1 submit handler
     if (testForm && !testForm.__fwBound) {
       testForm.__fwBound = true;
 
-      testForm.addEventListener("submit", async function (e) {
+      testForm.addEventListener("submit", function (e) {
         e.preventDefault();
-        setStatus(testForm, "");
-        disableSubmit(testForm, true, "Sending…");
-
-        var emailEl =
-          qs("#fw_email", testForm) ||
-          qs('input[name="email"]', testForm) ||
-          qs("#fw_s1_email", testForm);
-
-        var endpointEl =
-          qs("#fw_test_endpoint", testForm) ||
-          qs("#fw_endpoint", testForm) ||
-          qs('input[name="endpoint_url"]', testForm);
-
-        var email = (emailEl && emailEl.value ? emailEl.value : "").trim();
-        var endpoint = (endpointEl && endpointEl.value ? endpointEl.value : "").trim();
-
-        lastEmail = email;
-
-        try {
-          var out = await submitIntegratorRequest("push_access", {
-            kind: "push_access",
-            email: email,
-            endpoint_url: endpoint,
-            delivery_env: "test",
-            notes: "Docs: HTTPS Push Step 1 (test delivery).",
-            source_path: window.location.pathname,
-          });
-
-          // If backend returns delivery status, show it immediately.
-          if (out && out.attempted) {
-            setStatus(
-              testForm,
-              out.delivered
-                ? "Submitted. Test delivery succeeded (HTTP " + out.http_status + "). Check Webhook.site inbox."
-                : "Submitted. Test delivery attempted but failed. Check endpoint and try again."
-            );
-          } else {
-            setStatus(testForm, "Submitted. Test delivery is being sent now.");
-          }
-
-          setUnlocked(true);
-          setActiveStep(2);
-        } catch (err) {
-          setUnlocked(false);
-          setStatus(testForm, "Couldn’t submit. Check your inputs and try again.");
-          setActiveStep(1);
-        } finally {
-          disableSubmit(testForm, false);
-          updateStep2Availability();
-        }
+        runTestDelivery();
       });
     }
 
-    // Step 2 submit
+    // Resend handler
+    if (resendBtn && !resendBtn.__fwBound) {
+      resendBtn.__fwBound = true;
+      resendBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        runTestDelivery();
+      });
+    }
+
+    // ---------------- Step 2 submit (enable ongoing) ----------------
+
     if (enableForm && !enableForm.__fwBound) {
       enableForm.__fwBound = true;
 
@@ -346,7 +456,7 @@ function apiUrl(path) {
         setStatus(enableForm, "");
 
         if (!unlocked) {
-          setStatus(enableForm, "Complete the test to unlock permanent deliveries.");
+          setStatus(enableForm, "Complete the test to unlock ongoing deliveries.");
           setActiveStep(1);
           return;
         }
@@ -371,9 +481,17 @@ function apiUrl(path) {
           qs("#fw_prod_endpoint", enableForm) ||
           qs('input[name="endpoint_url"]', enableForm);
 
+        // Optional: public domain field (if present in HTML)
+        var domainEl =
+          qs("#fw_domain", enableForm) ||
+          qs('input[name="public_domain"]', enableForm) ||
+          qs('input[name="domain"]', enableForm);
+
         var company = (companyEl && companyEl.value ? companyEl.value : "").trim();
         var phone = (phoneEl && phoneEl.value ? phoneEl.value : "").trim();
         var prod = (prodEl && prodEl.value ? prodEl.value : "").trim();
+        var publicDomain =
+          (domainEl && domainEl.value ? domainEl.value : "").trim();
 
         var email2 = lastEmail;
         if (!email2) {
@@ -388,11 +506,18 @@ function apiUrl(path) {
             company: company,
             endpoint_url: prod,
             delivery_env: "production",
-            notes: phone ? "Ops contact phone: " + phone : "Docs: HTTPS Push Step 2 (enable production).",
+            // Keep notes backward-compatible; include extras safely.
+            notes:
+              (phone ? "Ops contact phone: " + phone + ". " : "") +
+              (publicDomain ? "Public domain: " + publicDomain + ". " : "") +
+              "Docs: HTTPS Push Step 2 (enable production).",
             source_path: window.location.pathname,
           });
 
-          setStatus(enableForm, "Submitted. Production delivery is now configured for ongoing publishes.");
+          setStatus(
+            enableForm,
+            "Submitted. Production delivery is now configured for ongoing publishes."
+          );
         } catch (err) {
           setStatus(enableForm, "Couldn’t submit. Try again.");
         } finally {
@@ -402,6 +527,7 @@ function apiUrl(path) {
       });
     }
 
+    // Cancel buttons close the accordion
     qsa("[data-fw-cancel]", root).forEach(function (btn) {
       btn.addEventListener("click", function (e) {
         e.preventDefault();
@@ -483,8 +609,11 @@ function apiUrl(path) {
   function mount() {
     var push = document.getElementById("pushAccessAccordion");
     var integ = document.getElementById("integrationAccordion");
-    if (push && !push.getAttribute("aria-hidden")) push.setAttribute("aria-hidden", "true");
-    if (integ && !integ.getAttribute("aria-hidden")) integ.setAttribute("aria-hidden", "true");
+
+    if (push && !push.getAttribute("aria-hidden"))
+      push.setAttribute("aria-hidden", "true");
+    if (integ && !integ.getAttribute("aria-hidden"))
+      integ.setAttribute("aria-hidden", "true");
 
     movePanelUnderTrigger("pushAccess");
     movePanelUnderTrigger("integration");
@@ -511,7 +640,6 @@ function apiUrl(path) {
       if (copyBtn) {
         e.preventDefault();
         var target = copyBtn.getAttribute("data-copy-target");
-
         var v = copyBtn.getAttribute("data-copy-value");
 
         if (!v) {
