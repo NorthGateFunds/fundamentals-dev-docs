@@ -3,7 +3,6 @@ console.log("FW_DEBUG_LOADED integrator-accordion.js", window.location.pathname)
 
 // --- FW_BASE override (injected) ---
 const FW_BASE_META = document.querySelector('meta[name="fw-base"]');
-const FW_BASE_META = document.querySelector('meta[name="fw-base"]');
 
 let FW_API_BASE = (FW_BASE_META && (FW_BASE_META.getAttribute("content") || "").trim()) || "";
 
