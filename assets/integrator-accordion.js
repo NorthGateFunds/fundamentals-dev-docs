@@ -1,3 +1,4 @@
+console.log("FW_DEBUG_LOADED integrator-accordion.js", window.location.pathname);
 // FW_BUILD_ID=2026-01-15T08:30:31.267Z
 
 // --- FW_BASE override (injected) ---
