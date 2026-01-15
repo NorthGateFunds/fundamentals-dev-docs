@@ -10,6 +10,8 @@
   - Both Step 1 + Step 2 panes are visible on load (no blank space).
   - Step 2 is visibly "locked" until Step 1 succeeds.
   - Step 1 supports "Resend test" (re-run test delivery as many times as needed).
+  - Resend is a subtle link-style button (not an ugly secondary pill).
+  - Cell phone is REQUIRED for Step 2 (production enable).
   - No hard dependency on HTML having a resend button; we inject one if missing.
 */
 
@@ -207,19 +209,15 @@ function fwApiUrl(pathname) {
     function setStep2Disabled(disabled) {
       if (!step2View) return;
 
-      // If you have CSS keyed off this, it’s useful.
       root.setAttribute("data-fw-unlocked", disabled ? "false" : "true");
 
-      // Disable all interactive controls in step 2 (except Close/Cancel buttons if present).
-      var controls = qsa(
-        'input, textarea, select, button',
-        step2View
-      ).filter(function (el) {
-        // allow buttons explicitly tagged as cancel/close
-        if (matches(el, "[data-fw-cancel]")) return false;
-        if (matches(el, '[data-close-accordion="pushAccess"]')) return false;
-        return true;
-      });
+      var controls = qsa('input, textarea, select, button', step2View).filter(
+        function (el) {
+          if (matches(el, "[data-fw-cancel]")) return false;
+          if (matches(el, '[data-close-accordion="pushAccess"]')) return false;
+          return true;
+        }
+      );
 
       controls.forEach(function (el) {
         try {
@@ -227,7 +225,6 @@ function fwApiUrl(pathname) {
         } catch (e) {}
       });
 
-      // Ensure primary submit follows the same rule
       if (step2Submit) {
         try {
           step2Submit.disabled = !!disabled;
@@ -236,7 +233,7 @@ function fwApiUrl(pathname) {
     }
 
     function setActiveStep(n) {
-      // NEW behavior: always render both panes to avoid blank space.
+      // Always render both panes to avoid blank space.
       if (step1View) step1View.style.display = "";
       if (step2View) step2View.style.display = "";
 
@@ -250,18 +247,14 @@ function fwApiUrl(pathname) {
       if (step2Item)
         step2Item.setAttribute("aria-current", n === 2 ? "step" : "false");
 
-      // If user tries to switch to step 2 while locked, keep them on step 1.
       if (n === 2 && !unlocked) {
         if (testForm)
           setStatus(testForm, "Run the test to unlock ongoing deliveries.");
         n = 1;
-        if (step1Item)
-          step1Item.setAttribute("data-active", "true");
-        if (step2Item)
-          step2Item.setAttribute("data-active", "false");
+        if (step1Item) step1Item.setAttribute("data-active", "true");
+        if (step2Item) step2Item.setAttribute("data-active", "false");
       }
 
-      // Focus first input in the requested view.
       var view = n === 1 ? step1View : step2View;
       if (view) {
         var first = qs("input, textarea, select, button", view);
@@ -276,15 +269,38 @@ function fwApiUrl(pathname) {
     }
 
     function updateStep2Availability() {
-      // NEW: if the readiness checkbox is missing, allow submit once unlocked.
-      var ok = unlocked && (!step2Ready || step2Ready.checked);
+      if (!unlocked) {
+        if (step2Submit) step2Submit.disabled = true;
+        return;
+      }
+
+      // readiness checkbox is optional in markup; if present, enforce it.
+      var readyOk = !step2Ready || step2Ready.checked;
+
+      // enforce required fields that may exist in markup
+      var companyEl =
+        (enableForm && (qs("#fw_company", enableForm) || qs('input[name="company"]', enableForm))) ||
+        null;
+
+      var phoneEl =
+        (enableForm && (qs("#fw_phone", enableForm) || qs('input[name="phone"]', enableForm) || qs('input[name="cell_phone"]', enableForm))) ||
+        null;
+
+      var prodEl =
+        (enableForm && (qs("#fw_prod_endpoint", enableForm) || qs('input[name="endpoint_url"]', enableForm))) ||
+        null;
+
+      var companyOk = companyEl ? (String(companyEl.value || "").trim().length > 0) : true;
+      var phoneOk = phoneEl ? (String(phoneEl.value || "").trim().length > 0) : true;
+      var prodOk = prodEl ? (String(prodEl.value || "").trim().length > 0) : true;
+
+      var ok = readyOk && companyOk && phoneOk && prodOk;
       if (step2Submit) step2Submit.disabled = !ok;
     }
 
     function setUnlocked(v) {
       unlocked = !!v;
 
-      // lock message visibility
       if (step2Lock) step2Lock.style.display = unlocked ? "none" : "";
 
       if (step2Item)
@@ -315,16 +331,48 @@ function fwApiUrl(pathname) {
 
     if (step2Ready) step2Ready.addEventListener("change", updateStep2Availability);
 
+    // Keep Step 2 button state responsive as user types.
+    if (enableForm) {
+      ["input", "change", "keyup"].forEach(function (evt) {
+        enableForm.addEventListener(evt, function () {
+          updateStep2Availability();
+        });
+      });
+    }
+
     // ---------------- Step 1: add resend support ----------------
+
+    function styleAsLinkButton(btn) {
+      // Subtle "link" style so it doesn't look like an ugly secondary pill.
+      btn.style.background = "none";
+      btn.style.border = "none";
+      btn.style.padding = "0";
+      btn.style.marginLeft = "12px";
+      btn.style.fontSize = "13px";
+      btn.style.lineHeight = "1.2";
+      btn.style.cursor = "pointer";
+      btn.style.textDecoration = "none";
+      btn.style.opacity = "0.9";
+      btn.style.userSelect = "none";
+
+      // Try to use theme-ish vars if present; fall back to a sensible blue.
+      btn.style.color = "var(--link, #4f5cff)";
+      btn.addEventListener("mouseenter", function () {
+        btn.style.textDecoration = "underline";
+        btn.style.opacity = "1";
+      });
+      btn.addEventListener("mouseleave", function () {
+        btn.style.textDecoration = "none";
+        btn.style.opacity = "0.9";
+      });
+    }
 
     function ensureResendButton() {
       if (!testForm) return null;
 
-      // If the markup already has it, use it.
       var btn = qs("#fwResendTest", testForm);
       if (btn) return btn;
 
-      // Otherwise inject a secondary button next to the submit button.
       var submitBtn = qs('button[type="submit"]', testForm);
       if (!submitBtn) return null;
 
@@ -332,27 +380,19 @@ function fwApiUrl(pathname) {
       btn.type = "button";
       btn.id = "fwResendTest";
       btn.textContent = "Resend test";
-      btn.style.marginLeft = "10px";
-      btn.style.display = "inline-flex";
-      btn.style.alignItems = "center";
-      btn.style.justifyContent = "center";
 
-      // Keep it visually secondary without requiring global CSS changes.
-      btn.style.padding = submitBtn.style.padding || "";
-      btn.style.borderRadius = submitBtn.style.borderRadius || "";
-      btn.style.border = "1px solid var(--border, #e2e8f0)";
-      btn.style.background = "#fff";
-      btn.style.color = "inherit";
-      btn.style.cursor = "pointer";
-
-      // Hide until first attempt (per your UX request).
+      // Default hidden until first attempt.
       btn.hidden = true;
 
+      // Insert right after submit.
       submitBtn.parentNode.insertBefore(btn, submitBtn.nextSibling);
+
+      styleAsLinkButton(btn);
       return btn;
     }
 
     var resendBtn = ensureResendButton();
+    if (resendBtn) styleAsLinkButton(resendBtn);
 
     async function runTestDelivery() {
       if (!testForm) return;
@@ -386,10 +426,8 @@ function fwApiUrl(pathname) {
           source_path: window.location.pathname,
         });
 
-        // After the first attempt, reveal resend.
         if (resendBtn) resendBtn.hidden = false;
 
-        // If backend returns delivery status, show it immediately.
         if (out && out.attempted) {
           if (out.delivered) {
             setStatus(
@@ -409,9 +447,7 @@ function fwApiUrl(pathname) {
             setActiveStep(1);
           }
         } else {
-          // If backend doesn’t return delivery info, keep it simple.
           setStatus(testForm, "Submitted. Test delivery is being sent now.");
-          // Don’t unlock unless we know it succeeded.
           setUnlocked(false);
           setActiveStep(1);
         }
@@ -427,7 +463,6 @@ function fwApiUrl(pathname) {
       }
     }
 
-    // Step 1 submit handler
     if (testForm && !testForm.__fwBound) {
       testForm.__fwBound = true;
 
@@ -437,7 +472,6 @@ function fwApiUrl(pathname) {
       });
     }
 
-    // Resend handler
     if (resendBtn && !resendBtn.__fwBound) {
       resendBtn.__fwBound = true;
       resendBtn.addEventListener("click", function (e) {
@@ -450,6 +484,20 @@ function fwApiUrl(pathname) {
 
     if (enableForm && !enableForm.__fwBound) {
       enableForm.__fwBound = true;
+
+      // If the phone input exists, make it required at runtime (safe for older markup).
+      (function enforcePhoneRequired() {
+        var phoneEl =
+          qs("#fw_phone", enableForm) ||
+          qs('input[name="phone"]', enableForm) ||
+          qs('input[name="cell_phone"]', enableForm);
+        if (phoneEl) {
+          try {
+            phoneEl.required = true;
+            phoneEl.setAttribute("aria-required", "true");
+          } catch (e) {}
+        }
+      })();
 
       enableForm.addEventListener("submit", async function (e) {
         e.preventDefault();
@@ -465,8 +513,6 @@ function fwApiUrl(pathname) {
           return;
         }
 
-        disableSubmit(enableForm, true, "Enabling…");
-
         var companyEl =
           qs("#fw_company", enableForm) ||
           qs('input[name="company"]', enableForm) ||
@@ -481,7 +527,6 @@ function fwApiUrl(pathname) {
           qs("#fw_prod_endpoint", enableForm) ||
           qs('input[name="endpoint_url"]', enableForm);
 
-        // Optional: public domain field (if present in HTML)
         var domainEl =
           qs("#fw_domain", enableForm) ||
           qs('input[name="public_domain"]', enableForm) ||
@@ -492,6 +537,25 @@ function fwApiUrl(pathname) {
         var prod = (prodEl && prodEl.value ? prodEl.value : "").trim();
         var publicDomain =
           (domainEl && domainEl.value ? domainEl.value : "").trim();
+
+        // Required validations (UI + safety)
+        if (!company) {
+          setStatus(enableForm, "Company is required.");
+          updateStep2Availability();
+          return;
+        }
+        if (!phone) {
+          setStatus(enableForm, "A cell phone number is required for production delivery.");
+          updateStep2Availability();
+          return;
+        }
+        if (!prod) {
+          setStatus(enableForm, "Production endpoint URL is required.");
+          updateStep2Availability();
+          return;
+        }
+
+        disableSubmit(enableForm, true, "Enabling…");
 
         var email2 = lastEmail;
         if (!email2) {
@@ -506,9 +570,10 @@ function fwApiUrl(pathname) {
             company: company,
             endpoint_url: prod,
             delivery_env: "production",
-            // Keep notes backward-compatible; include extras safely.
             notes:
-              (phone ? "Ops contact phone: " + phone + ". " : "") +
+              "Ops contact phone: " +
+              phone +
+              ". " +
               (publicDomain ? "Public domain: " + publicDomain + ". " : "") +
               "Docs: HTTPS Push Step 2 (enable production).",
             source_path: window.location.pathname,
@@ -527,7 +592,6 @@ function fwApiUrl(pathname) {
       });
     }
 
-    // Cancel buttons close the accordion
     qsa("[data-fw-cancel]", root).forEach(function (btn) {
       btn.addEventListener("click", function (e) {
         e.preventDefault();
@@ -557,7 +621,8 @@ function fwApiUrl(pathname) {
 
   function mountIntegration(panel) {
     var form =
-      qs("#fwIntegrationForm", panel) || qs('form[data-fw-kind="integration"]', panel);
+      qs("#fwIntegrationForm", panel) ||
+      qs('form[data-fw-kind="integration"]', panel);
     if (!form) return;
 
     if (form.__fwBound) return;
