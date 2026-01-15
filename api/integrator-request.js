@@ -8,11 +8,16 @@
 
 export const config = { runtime: "nodejs" };
 
+// Change this string any time you want to verify what Vercel is *actually* running.
+const HANDLER_VERSION = "integrator-request@2026-01-15T04:15Z";
+
 /* ---------------- tiny utils ---------------- */
 
 function send(res, status, body) {
   res.statusCode = status;
   res.setHeader("content-type", "application/json; charset=utf-8");
+  // hard marker in headers so curl -D - shows it
+  res.setHeader("x-fw-handler-version", HANDLER_VERSION);
   res.end(JSON.stringify(body));
 }
 
@@ -100,7 +105,8 @@ function makeTestNewsML({ providerId, providerName, createdIso, newsItemId }) {
     `<p><b>This is a test delivery.</b></p>
 <p>If you can read this, your endpoint accepted an HTTPS POST containing NewsML 1.2.</p>
 <p>newsItemId: <code>${xmlEscape(newsItemId)}</code></p>
-<p>created: <code>${xmlEscape(createdIso)}</code></p>`,
+<p>created: <code>${xmlEscape(createdIso)}</code></p>
+<p>handler: <code>${xmlEscape(HANDLER_VERSION)}</code></p>`,
     ""
   );
 
@@ -211,11 +217,6 @@ function isHttpsUrl(u) {
 }
 
 function normalizeKindAndEnv(kind, deliveryEnvRaw) {
-  // DB constraint allows:
-  // - push_access
-  // - integration
-  //
-  // We accept legacy client kinds and map them to push_access.
   const delivery_env = cleanStr(deliveryEnvRaw);
 
   if (kind === "push_test") {
@@ -236,7 +237,6 @@ function normalizeKindAndEnv(kind, deliveryEnvRaw) {
 }
 
 function pickHeaders(h) {
-  // Return only a few useful headers so the response stays small.
   const out = {};
   if (!h || typeof h.get !== "function") return out;
   const keys = [
@@ -260,7 +260,7 @@ function pickHeaders(h) {
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("allow", "POST");
-    return send(res, 405, { ok: false, error: "method_not_allowed" });
+    return send(res, 405, { ok: false, error: "method_not_allowed", v: HANDLER_VERSION });
   }
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -271,6 +271,7 @@ export default async function handler(req, res) {
       ok: false,
       error: "missing_env",
       required: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+      v: HANDLER_VERSION,
     });
   }
 
@@ -278,14 +279,14 @@ export default async function handler(req, res) {
   try {
     body = await readJson(req);
   } catch {
-    return send(res, 400, { ok: false, error: "invalid_json" });
+    return send(res, 400, { ok: false, error: "invalid_json", v: HANDLER_VERSION });
   }
 
   const incomingKind = cleanStr(body.kind);
   const email = cleanStr(body.email)?.toLowerCase() ?? null;
 
   if (!incomingKind) {
-    return send(res, 400, { ok: false, error: "invalid_kind" });
+    return send(res, 400, { ok: false, error: "invalid_kind", v: HANDLER_VERSION });
   }
 
   const { dbKind, delivery_env, isTest } = normalizeKindAndEnv(
@@ -298,26 +299,25 @@ export default async function handler(req, res) {
       ok: false,
       error: "invalid_kind",
       allowed: ["push_access", "integration", "push_test (legacy)", "push_enable (legacy)"],
+      v: HANDLER_VERSION,
     });
   }
 
   if (!email || !isEmail(email)) {
-    return send(res, 400, { ok: false, error: "invalid_email" });
+    return send(res, 400, { ok: false, error: "invalid_email", v: HANDLER_VERSION });
   }
 
   const endpoint_url = cleanStr(body.endpoint_url);
 
-  // Step 1 test requires endpoint_url and it must be https.
   if (dbKind === "push_access" && isTest) {
     if (!endpoint_url) {
-      return send(res, 400, { ok: false, error: "missing_endpoint_url" });
+      return send(res, 400, { ok: false, error: "missing_endpoint_url", v: HANDLER_VERSION });
     }
     if (!isHttpsUrl(endpoint_url)) {
-      return send(res, 400, { ok: false, error: "endpoint_must_be_https" });
+      return send(res, 400, { ok: false, error: "endpoint_must_be_https", v: HANDLER_VERSION });
     }
   }
 
-  // Insert request row via RPC (wire schema).
   const rpcUrl = `${SUPABASE_URL}/rest/v1/rpc/submit_integrator_request`;
 
   const rpcPayload = {
@@ -346,7 +346,7 @@ export default async function handler(req, res) {
       body: JSON.stringify(rpcPayload),
     });
   } catch {
-    return send(res, 502, { ok: false, error: "supabase_unreachable" });
+    return send(res, 502, { ok: false, error: "supabase_unreachable", v: HANDLER_VERSION });
   }
 
   if (!rpcRes.ok) {
@@ -356,17 +356,15 @@ export default async function handler(req, res) {
       error: "rpc_failed",
       status: rpcRes.status,
       details: text.slice(0, 500),
+      v: HANDLER_VERSION,
     });
   }
 
-  // RPC returns uuid
   const id = await rpcRes.json().catch(() => null);
 
-  // Step 1 test: POST NewsML to endpoint and return a definitive accepted/rejected signal.
+  // Step 1 test delivery
   if (dbKind === "push_access" && isTest) {
     const createdIso = new Date().toISOString();
-
-    // Use the DB row id as the NewsItemId so you can correlate webhook deliveries.
     const newsItemId = String(id || `test-${Date.now()}`);
 
     const xml = makeTestNewsML({
@@ -376,7 +374,6 @@ export default async function handler(req, res) {
       newsItemId,
     });
 
-    // Hard timeout so we don’t hang (common cause of “nothing happened”)
     const controller = new AbortController();
     const timeoutMs = 12_000;
     const t = setTimeout(() => controller.abort(), timeoutMs);
@@ -389,6 +386,7 @@ export default async function handler(req, res) {
         headers: {
           "content-type": "application/xml; charset=utf-8",
           "user-agent": "FundamentalsWireHTTPSPushTest/1.0",
+          "x-fw-handler-version": HANDLER_VERSION,
           "x-fw-delivery": "1",
           "x-fw-delivery-env": "test",
           "x-fw-request-id": String(id || ""),
@@ -410,12 +408,12 @@ export default async function handler(req, res) {
         timeout_ms: timeoutMs,
         sent_bytes: Buffer.byteLength(xml, "utf8"),
         newsml_news_item_id: newsItemId,
+        v: HANDLER_VERSION,
       });
     } finally {
       clearTimeout(t);
     }
 
-    // Webhook.site returns 2xx with a tiny body; some endpoints return 204 empty.
     const respText = await outRes.text().catch(() => "");
     const snippet = String(respText || "").slice(0, 300);
 
@@ -430,8 +428,10 @@ export default async function handler(req, res) {
       response_snippet: snippet,
       sent_bytes: Buffer.byteLength(xml, "utf8"),
       newsml_news_item_id: newsItemId,
+      v: HANDLER_VERSION,
     });
   }
 
-  return send(res, 200, { ok: true, id });
+  // Always include version so we can see what’s live
+  return send(res, 200, { ok: true, id, v: HANDLER_VERSION });
 }
