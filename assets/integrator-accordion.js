@@ -1,9 +1,19 @@
 
 // --- FW_BASE override (injected) ---
 const FW_BASE_META = document.querySelector('meta[name="fw-base"]');
-const FW_API_BASE = (FW_BASE_META && (FW_BASE_META.getAttribute("content") || "").trim())
-  ? (FW_BASE_META.getAttribute("content") || "").trim().replace(/\/+$/, "")
-  : "";
+const FW_BASE_META = document.querySelector('meta[name="fw-base"]');
+
+let FW_API_BASE = (FW_BASE_META && (FW_BASE_META.getAttribute("content") || "").trim()) || "";
+
+// If we're on Cloudflare Pages (*.pages.dev), always send form traffic to Vercel,
+// because Vercel is where the serverless /api handlers live.
+try {
+  const host = String(window.location.hostname || "");
+  if (!FW_API_BASE && host.endsWith("pages.dev")) {
+    FW_API_BASE = "https://fundamentals-dev-docs.vercel.app";
+  }
+} catch {}
+
 function fwApiUrl(pathname) {
   const p = String(pathname || "").startsWith("/") ? String(pathname || "") : "/" + String(pathname || "");
   return (FW_API_BASE ? FW_API_BASE : "") + p;
