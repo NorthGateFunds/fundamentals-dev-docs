@@ -1,3 +1,15 @@
+
+// --- FW_BASE override (injected) ---
+const FW_BASE_META = document.querySelector('meta[name="fw-base"]');
+const FW_API_BASE = (FW_BASE_META && (FW_BASE_META.getAttribute("content") || "").trim())
+  ? (FW_BASE_META.getAttribute("content") || "").trim().replace(/\/+$/, "")
+  : "";
+function fwApiUrl(pathname) {
+  const p = String(pathname || "").startsWith("/") ? String(pathname || "") : "/" + String(pathname || "");
+  return (FW_API_BASE ? FW_API_BASE : "") + p;
+}
+// --- end injected ---
+
 // assets/integrator-accordion.js
 (function () {
   function qs(sel, root) {
@@ -6,6 +18,34 @@
   function qsa(sel, root) {
     return Array.prototype.slice.call((root || document).querySelectorAll(sel));
   }
+
+  // Base URL support:
+  // - default: same-origin (""), good for Vercel
+  // - for Cloudflare Pages: set <meta name="fw-base" content="https://fundamentals-dev-docs.vercel.app" />
+  function fwBase() {
+    var meta = document.querySelector('meta[name="fw-base"]');
+    var v = meta && meta.getAttribute("content");
+    v = (v || "").trim();
+    if (!v) return "";
+    return v.replace(/\/+$/, "");
+  }
+
+  function apiUrl(path) {
+    return fwBase() + path;
+  }
+
+  function fwBase() {
+  var m = document.querySelector('meta[name="fw-base"]');
+  var v = m && m.getAttribute("content");
+  v = (v || "").trim();
+  if (!v) return "";            // default same-origin
+  if (v.endsWith("/")) v = v.slice(0, -1);
+  return v;
+}
+
+function apiUrl(path) {
+  return fwBase() + path;       // "" + "/api/..." OR "https://xyz" + "/api/..."
+}
 
   function safeClosest(el, sel) {
     if (!el) return null;
@@ -98,10 +138,11 @@
 
   // NOTE:
   // This hits /api/integrator-request which MUST be backed by a real server.
-  // On Cloudflare Pages, implement it as a Pages Function at:
-  //   functions/api/integrator-request.js
+  // On Cloudflare Pages, set <meta name="fw-base" content="https://fundamentals-dev-docs.vercel.app" />
   async function submitIntegratorRequest(_kind, payload) {
-    var res = await fetch("/api/integrator-request", {
+    var url = apiUrl("/api/integrator-request");
+
+    var res = await fetch(url, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),
@@ -112,7 +153,7 @@
     });
 
     if (!res.ok || !json.ok) throw new Error(json.error || "submit_failed");
-    return json.id;
+    return json; // return the whole object so UI can show delivery status
   }
 
   function setStatus(form, msg) {
@@ -137,12 +178,8 @@
   // ---------- Wizard helpers (Option B) ----------
 
   function mountWizard(panel) {
-    // We support either:
-    // - data-fw-wizard root (recommended), or
-    // - fallback to panel itself
     var root = qs("[data-fw-wizard]", panel) || panel;
 
-    // Optional rail support (if you later add a left rail). Safe if absent.
     var rail = qs("[data-fw-rail]", root);
 
     var step1View =
@@ -150,42 +187,33 @@
     var step2View =
       qs('[data-fw-step-view="2"]', root) || qs("[data-fw-step2]", root);
 
-    // If markup isn’t wizard-style, bail (still keep accordion open/close + integration form).
     if (!step1View && !step2View) return;
 
     var step1Item = rail ? qs('[data-fw-rail-item="1"]', rail) : null;
     var step2Item = rail ? qs('[data-fw-rail-item="2"]', rail) : null;
 
-    // Step badges (action text INSIDE badge)
     var badge1 = qs('[data-fw-badge="1"]', root);
     var badge2 = qs('[data-fw-badge="2"]', root);
 
-    // Lock/Unlock UI for step 2
     var step2Lock = qs("[data-fw-step2-lock]", root) || qs("#fwStep2Locked", root);
     var step2Submit = qs("#fwEnableBtn", root) || qs('[data-fw-step2-submit]', root);
     var step2Ready = qs("#fw_ready", root) || qs('[data-fw-step2-ready]', root);
 
-    // Forms
     var testForm = qs("#fwTestForm", root) || qs('[data-fw-step1-form]', root);
     var enableForm = qs("#fwEnableForm", root) || qs('[data-fw-step2-form]', root);
 
-    // Keep Step 1 email to reuse in Step 2 if Step 2 doesn’t ask for it
     var lastEmail = "";
-
     var unlocked = false;
 
     function setActiveStep(n) {
-      // Hide/show views
       if (step1View) step1View.style.display = n === 1 ? "" : "none";
       if (step2View) step2View.style.display = n === 2 ? "" : "none";
 
-      // Rail state (if present)
       if (step1Item) step1Item.setAttribute("data-active", n === 1 ? "true" : "false");
       if (step2Item) step2Item.setAttribute("data-active", n === 2 ? "true" : "false");
       if (step1Item) step1Item.setAttribute("aria-current", n === 1 ? "step" : "false");
       if (step2Item) step2Item.setAttribute("aria-current", n === 2 ? "step" : "false");
 
-      // Focus first input in active view
       var view = n === 1 ? step1View : step2View;
       if (view) {
         var first = qs("input, textarea, select, button", view);
@@ -213,15 +241,12 @@
       updateStep2Availability();
     }
 
-    // Badge text inside the badge
     if (badge1) badge1.textContent = "Test delivery";
     if (badge2) badge2.textContent = "Enable ongoing";
 
-    // Default: Step 1 active; Step 2 locked
     setUnlocked(false);
     setActiveStep(1);
 
-    // Rail click behavior (only allow step 2 if unlocked)
     if (step1Item) {
       step1Item.addEventListener("click", function (e) {
         e.preventDefault();
@@ -267,10 +292,7 @@
         lastEmail = email;
 
         try {
-          // IMPORTANT:
-          // DB expects kind = 'push_access' (matches your wire.integrator_requests + RPC).
-          // We treat Step 1 as a "push_access" request with delivery_env='test'.
-          await submitIntegratorRequest("push_access", {
+          var out = await submitIntegratorRequest("push_access", {
             kind: "push_access",
             email: email,
             endpoint_url: endpoint,
@@ -279,7 +301,18 @@
             source_path: window.location.pathname,
           });
 
-          setStatus(testForm, "Submitted. Expect a test delivery within ~1–2 minutes.");
+          // If backend returns delivery status, show it immediately.
+          if (out && out.attempted) {
+            setStatus(
+              testForm,
+              out.delivered
+                ? "Submitted. Test delivery succeeded (HTTP " + out.http_status + "). Check Webhook.site inbox."
+                : "Submitted. Test delivery attempted but failed. Check endpoint and try again."
+            );
+          } else {
+            setStatus(testForm, "Submitted. Test delivery is being sent now.");
+          }
+
           setUnlocked(true);
           setActiveStep(2);
         } catch (err) {
@@ -331,16 +364,13 @@
         var phone = (phoneEl && phoneEl.value ? phoneEl.value : "").trim();
         var prod = (prodEl && prodEl.value ? prodEl.value : "").trim();
 
-        // If Step 2 has no email field, reuse Step 1 email.
         var email2 = lastEmail;
         if (!email2) {
-          // As an extra fallback, try to read the Step 1 email field if it still exists
           var step1EmailEl = qs("#fw_email", root) || qs('input[name="email"]', root);
           email2 = (step1EmailEl && step1EmailEl.value ? step1EmailEl.value : "").trim();
         }
 
         try {
-          // Step 2 is still a push_access request; we record production endpoint + ops contact.
           await submitIntegratorRequest("push_access", {
             kind: "push_access",
             email: email2,
@@ -361,7 +391,6 @@
       });
     }
 
-    // Cancel buttons inside wizard (if you add any with data-fw-cancel) should close the accordion
     qsa("[data-fw-cancel]", root).forEach(function (btn) {
       btn.addEventListener("click", function (e) {
         e.preventDefault();
@@ -382,7 +411,6 @@
     var trigger = qs('[data-open-accordion="' + key + '"]');
     if (!trigger) return;
 
-    // If already right after the trigger, do nothing
     if (trigger.nextElementSibling === panel) return;
 
     trigger.parentNode.insertBefore(panel, trigger.nextSibling);
@@ -429,7 +457,6 @@
       }
     });
 
-    // Cancel/close should close
     qsa('[data-close-accordion="integration"], [data-fw-cancel]', panel).forEach(
       function (btn) {
         btn.addEventListener("click", function (e) {
@@ -443,17 +470,14 @@
   // ---------- Global click handling ----------
 
   function mount() {
-    // Defensive: keep panels hidden by default (CSS should also do this)
     var push = document.getElementById("pushAccessAccordion");
     var integ = document.getElementById("integrationAccordion");
     if (push && !push.getAttribute("aria-hidden")) push.setAttribute("aria-hidden", "true");
     if (integ && !integ.getAttribute("aria-hidden")) integ.setAttribute("aria-hidden", "true");
 
-    // Fix placement so the panel appears directly under its CTA row
     movePanelUnderTrigger("pushAccess");
     movePanelUnderTrigger("integration");
 
-    // Mount wizard + integration
     if (push) mountWizard(push);
     if (integ) mountIntegration(integ);
 
@@ -472,16 +496,13 @@
         return;
       }
 
-      // Copy buttons: require explicit data-copy-target and read value from data-copy-value
       var copyBtn = safeClosest(e.target, "[data-copy-target]");
       if (copyBtn) {
         e.preventDefault();
         var target = copyBtn.getAttribute("data-copy-target");
 
-        // Preferred: value on the button
         var v = copyBtn.getAttribute("data-copy-value");
 
-        // Fallback: find a nearby element with matching data-copy-key
         if (!v) {
           var scope =
             safeClosest(copyBtn, "[data-fw-copy-scope]") ||
