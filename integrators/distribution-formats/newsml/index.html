@@ -1,12 +1,11 @@
 <!doctype html>
 <html lang="en">
   <head>
-<!-- DEPLOY_MARK:2026-01-15T18:53:08.532Z -->
-
+    <!-- DEPLOY_MARK:2026-01-15T18:53:08.532Z -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="fw-base" content="https://fundamentals-dev-docs.vercel.app" />
-<title>NewsML (HTTPS Push) • Fundamentals Wire Developer Docs</title>
+    <meta name="fw-base" content="https://fundamentals-dev-docs.vercel.app" />
+    <title>NewsML (HTTPS Push) • Fundamentals Wire Developer Docs</title>
 
     <link rel="stylesheet" href="/assets/styles.css" />
     <script defer src="/assets/integrator-accordion.js?v=20260115-0825"></script>
@@ -281,16 +280,16 @@
         </div>
 
         <div class="nav">
-  <div class="navSection">For Integrators</div>
-  <a href="/integrators/distribution-formats/index.html">Distribution Formats</a>
-  <a href="/integrators/distribution-formats/newsml/index.html" class="active">NewsML (HTTPS Push)</a>
-  <a href="/integrators/distribution-formats/rss/index.html">RSS (Feed Builder)</a>
-  <a href="/integrators/distribution-formats/atom/index.html">Atom (Feed Builder)</a>
+          <div class="navSection">For Integrators</div>
+          <a href="/integrators/distribution-formats/index.html">Distribution Formats</a>
+          <a href="/integrators/distribution-formats/newsml/index.html" class="active">NewsML (HTTPS Push)</a>
+          <a href="/integrators/distribution-formats/rss/index.html">RSS (Feed Builder)</a>
+          <a href="/integrators/distribution-formats/atom/index.html">Atom (Feed Builder)</a>
 
-  <div class="navSection">For Regulators &amp; Legal</div>
-  <a href="/regulators/reg-fd-compliance/index.html">Reg FD Compliance</a>
-  <a href="/regulators/auditability-evidence/index.html">Auditability &amp; Evidence</a>
-</div>
+          <div class="navSection">For Regulators &amp; Legal</div>
+          <a href="/regulators/reg-fd-compliance/index.html">Reg FD Compliance</a>
+          <a href="/regulators/auditability-evidence/index.html">Auditability &amp; Evidence</a>
+        </div>
       </aside>
 
       <main class="main">
@@ -718,9 +717,101 @@ X-FW-Signature: t=1700000000,v1=...
 &lt;NewsML xmlns="http://iptc.org/std/NewsML/1.2/" Version="1.2"&gt;
   ...
 &lt;/NewsML&gt;</code></pre>
-            <p style="margin-bottom:0; color:var(--muted);">
-              Respond with <code>204</code> (or any <code>2xx</code>) once you’ve accepted the payload for async processing.
-            </p>
+          </div>
+
+          <!-- NEW: real sample payload output -->
+          <div class="card">
+            <h3 style="margin-top:0;">Example NewsML payload (test delivery)</h3>
+            <pre class="code"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;NewsML xmlns="http://iptc.org/std/NewsML/1.2/" Version="1.2"&gt;
+  &lt;Catalog Href="https://wire.fundamentals.so/schema/newsml/FundamentalsWireNewsMLCatalog.xml"/&gt;
+
+  &lt;NewsEnvelope&gt;
+    &lt;DateAndTime&gt;20260115T202421+0000&lt;/DateAndTime&gt;
+
+    &lt;SentFrom&gt;
+      &lt;Party FormalName="Fundamentals Wire"&gt;
+        &lt;Property FormalName="ProviderProfile" Value="FundamentalsWireProfile"/&gt;
+        &lt;Property FormalName="ProviderProfileVersion" Value="1.0"/&gt;
+      &lt;/Party&gt;
+    &lt;/SentFrom&gt;
+
+    &lt;NewsService FormalName="Fundamentals Wire"/&gt;
+    &lt;NewsProduct FormalName="PressRelease"/&gt;
+  &lt;/NewsEnvelope&gt;
+
+  &lt;NewsItem&gt;
+    &lt;Identification&gt;
+      &lt;NewsIdentifier&gt;
+        &lt;ProviderId&gt;wire.fundamentals.so&lt;/ProviderId&gt;
+        &lt;DateId&gt;20260115&lt;/DateId&gt;
+        &lt;NewsItemId&gt;8d8d5c97-24a1-4d21-a013-66cfd0809e12&lt;/NewsItemId&gt;
+        &lt;RevisionId PreviousRevision="0" Update="N"&gt;1&lt;/RevisionId&gt;
+        &lt;PublicIdentifier&gt;urn:newsml:wire.fundamentals.so:20260115:8d8d5c97-24a1-4d21-a013-66cfd0809e12:1&lt;/PublicIdentifier&gt;
+      &lt;/NewsIdentifier&gt;
+    &lt;/Identification&gt;
+
+    &lt;NewsManagement&gt;
+      &lt;NewsItemType FormalName="Release"/&gt;
+      &lt;FirstCreated&gt;20260115T202421+0000&lt;/FirstCreated&gt;
+      &lt;ThisRevisionCreated&gt;20260115T202421+0000&lt;/ThisRevisionCreated&gt;
+      &lt;Status FormalName="Usable"/&gt;
+    &lt;/NewsManagement&gt;
+
+    &lt;NewsComponent&gt;
+      &lt;BasisForChoice Rank="1"&gt;./NewsComponent/Role&lt;/BasisForChoice&gt;
+
+      &lt;NewsLines&gt;
+        &lt;HeadLine&gt;Fundamentals Wire — HTTPS Push Test Delivery&lt;/HeadLine&gt;
+        &lt;DateLine&gt;NEW YORK--(FUNDAMENTALS WIRE)--2026-01-15&lt;/DateLine&gt;
+        &lt;SlugLine&gt;HTTPS Push Test&lt;/SlugLine&gt;
+      &lt;/NewsLines&gt;
+
+      &lt;DescriptiveMetadata&gt;
+        &lt;Language FormalName="en"/&gt;
+        &lt;Genre FormalName="Release"/&gt;
+      &lt;/DescriptiveMetadata&gt;
+
+      &lt;NewsComponent&gt;
+        &lt;Role FormalName="HeadLine"/&gt;
+        &lt;BasisForChoice Rank="1"&gt;./ContentItem/Format&lt;/BasisForChoice&gt;
+        &lt;DescriptiveMetadata&gt;&lt;Language FormalName="en"/&gt;&lt;/DescriptiveMetadata&gt;
+        &lt;ContentItem Duid="8d8d5c97-24a1-4d21-a013-66cfd0809e12.headline"&gt;
+          &lt;Format FormalName="XHTML"/&gt;
+          &lt;MimeType FormalName="text/xhtml"/&gt;
+          &lt;DataContent&gt;&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;head&gt;&lt;title&gt;&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;p class="fwtextaligncenter"&gt;&lt;b&gt;Fundamentals Wire — HTTPS Push Test Delivery&lt;/b&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;&lt;/DataContent&gt;
+        &lt;/ContentItem&gt;
+      &lt;/NewsComponent&gt;
+
+      &lt;NewsComponent&gt;
+        &lt;Role FormalName="Body"/&gt;
+        &lt;BasisForChoice Rank="1"&gt;./ContentItem/Format&lt;/BasisForChoice&gt;
+        &lt;DescriptiveMetadata&gt;&lt;Language FormalName="en"/&gt;&lt;/DescriptiveMetadata&gt;
+        &lt;ContentItem Duid="8d8d5c97-24a1-4d21-a013-66cfd0809e12.body"&gt;
+          &lt;Format FormalName="XHTML"/&gt;
+          &lt;MimeType FormalName="text/xhtml"/&gt;
+          &lt;DataContent&gt;&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;head&gt;&lt;title&gt;&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;This is a test delivery.&lt;/b&gt;&lt;/p&gt;
+&lt;p&gt;If you can read this, your endpoint accepted an HTTPS POST containing NewsML 1.2.&lt;/p&gt;
+&lt;p&gt;newsItemId: &lt;code&gt;8d8d5c97-24a1-4d21-a013-66cfd0809e12&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;created: &lt;code&gt;2026-01-15T20:24:21.113Z&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;handler: &lt;code&gt;integrator-request@2026-01-15T04:30Z&lt;/code&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;&lt;/DataContent&gt;
+        &lt;/ContentItem&gt;
+      &lt;/NewsComponent&gt;
+
+      &lt;NewsComponent&gt;
+        &lt;Role FormalName="StyleSheet"/&gt;
+        &lt;BasisForChoice Rank="1"&gt;./ContentItem/Format&lt;/BasisForChoice&gt;
+        &lt;DescriptiveMetadata&gt;&lt;Language FormalName="en"/&gt;&lt;/DescriptiveMetadata&gt;
+        &lt;ContentItem Duid="8d8d5c97-24a1-4d21-a013-66cfd0809e12.stylesheet"&gt;
+          &lt;Format FormalName="CSS"/&gt;
+          &lt;MimeType FormalName="text/css"/&gt;
+          &lt;DataContent&gt;.fwtextaligncenter { text-align: center; }&lt;/DataContent&gt;
+        &lt;/ContentItem&gt;
+      &lt;/NewsComponent&gt;
+
+    &lt;/NewsComponent&gt;
+  &lt;/NewsItem&gt;
+&lt;/NewsML&gt;</code></pre>
           </div>
 
           <div class="footerNote">
