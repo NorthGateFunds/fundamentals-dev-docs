@@ -1,7 +1,14 @@
-// app/api/integrator-request/route.js (or pages/api/integrator-request.js)
-// (keep path the same as your repo expects)
+// api/integrator-request.js
+// Node runtime endpoint for docs site.
+// - Inserts integrator request via Supabase RPC (SECURITY DEFINER)
+// - If Step 1 test (push_access + delivery_env=test), POSTs a minimal NewsML 1.2 XML payload
+//   to the provided HTTPS endpoint and returns delivery status.
+//
+// NOTE: Keep this file path exactly as your repo expects: api/integrator-request.js
 
 export const config = { runtime: "nodejs" };
+
+/* ---------------- tiny utils ---------------- */
 
 function send(res, status, body) {
   res.statusCode = status;
@@ -25,7 +32,7 @@ function readJson(req) {
 }
 
 function isEmail(s) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || "").trim());
 }
 
 function cleanStr(v) {
@@ -42,6 +49,8 @@ function xmlEscape(s) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
 }
+
+/* ---------------- NewsML helpers (minimal) ---------------- */
 
 function dateIdFromIso(iso) {
   const d = new Date(iso);
@@ -76,6 +85,7 @@ function makeTestNewsML({ providerId, providerName, createdIso, newsItemId }) {
   const dt = dateTimeFromIso(createdIso);
   const dateId = dateIdFromIso(createdIso);
   const revisionId = "1";
+
   const publicIdentifier = buildPublicIdentifier({
     providerId,
     dateId,
@@ -84,13 +94,13 @@ function makeTestNewsML({ providerId, providerName, createdIso, newsItemId }) {
   });
 
   const title = "Fundamentals Wire — HTTPS Push Test Delivery";
-  const dateline = "NEW YORK--(FUNDAMENTALS WIRE)--" + createdIso.slice(0, 10);
+  const dateline = `NEW YORK--(FUNDAMENTALS WIRE)--${createdIso.slice(0, 10)}`;
 
   const bodyXhtml = normalizeXhtmlDoc(
     `<p><b>This is a test delivery.</b></p>
-     <p>If you can read this, your endpoint accepted an HTTPS POST containing NewsML 1.2.</p>
-     <p>newsItemId: <code>${xmlEscape(newsItemId)}</code></p>
-     <p>created: <code>${xmlEscape(createdIso)}</code></p>`,
+<p>If you can read this, your endpoint accepted an HTTPS POST containing NewsML 1.2.</p>
+<p>newsItemId: <code>${xmlEscape(newsItemId)}</code></p>
+<p>created: <code>${xmlEscape(createdIso)}</code></p>`,
     ""
   );
 
@@ -189,6 +199,8 @@ function makeTestNewsML({ providerId, providerName, createdIso, newsItemId }) {
 </NewsML>`;
 }
 
+/* ---------------- kind/env normalization ---------------- */
+
 function isHttpsUrl(u) {
   try {
     const url = new URL(u);
@@ -199,11 +211,11 @@ function isHttpsUrl(u) {
 }
 
 function normalizeKindAndEnv(kind, deliveryEnvRaw) {
-  // DB constraint (wire.integrator_requests_kind_check) allows:
+  // DB constraint allows:
   // - push_access
   // - integration
   //
-  // Accept legacy client kinds and map them.
+  // We accept legacy client kinds and map them to push_access.
   const delivery_env = cleanStr(deliveryEnvRaw);
 
   if (kind === "push_test") {
@@ -222,6 +234,8 @@ function normalizeKindAndEnv(kind, deliveryEnvRaw) {
 
   return { dbKind: null, delivery_env, isTest: false };
 }
+
+/* ---------------- handler ---------------- */
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -273,7 +287,7 @@ export default async function handler(req, res) {
 
   const endpoint_url = cleanStr(body.endpoint_url);
 
-  // If this is the Step 1 “test delivery”, an endpoint is required and must be https.
+  // Step 1 test requires endpoint_url and it must be https.
   if (dbKind === "push_access" && isTest) {
     if (!endpoint_url) {
       return send(res, 400, { ok: false, error: "missing_endpoint_url" });
@@ -283,9 +297,7 @@ export default async function handler(req, res) {
     }
   }
 
-  /**
-   * Insert request row via RPC (wire schema).
-   */
+  // Insert request row via RPC (wire schema).
   const rpcUrl = `${SUPABASE_URL}/rest/v1/rpc/submit_integrator_request`;
 
   const rpcPayload = {
@@ -330,13 +342,13 @@ export default async function handler(req, res) {
   // RPC returns uuid
   const id = await rpcRes.json().catch(() => null);
 
-  /**
-   * Step 1 test: actually POST a NewsML file to their endpoint and report the result.
-   * (We’re not re-engineering schema here — just returning a definitive “accepted by endpoint” signal.)
-   */
+  // Step 1 test: POST NewsML to endpoint and return a definitive accepted/rejected signal.
   if (dbKind === "push_access" && isTest) {
     const createdIso = new Date().toISOString();
-    const newsItemId = String(id || crypto.randomUUID());
+
+    // Use the DB row id as the NewsItemId so you can correlate webhook deliveries.
+    const newsItemId = String(id || `test-${Date.now()}`);
+
     const xml = makeTestNewsML({
       providerId: "wire.fundamentals.so",
       providerName: "Fundamentals Wire",
@@ -351,11 +363,13 @@ export default async function handler(req, res) {
         headers: {
           "content-type": "application/xml; charset=utf-8",
           "user-agent": "FundamentalsWireHTTPSPushTest/1.0",
-          "x-fw-push-test": "1",
+          "x-fw-delivery": "1",
+          "x-fw-delivery-env": "test",
+          "x-fw-request-id": String(id || ""),
         },
         body: xml,
       });
-    } catch (e) {
+    } catch {
       return send(res, 200, {
         ok: true,
         id,
@@ -365,6 +379,7 @@ export default async function handler(req, res) {
       });
     }
 
+    // Webhook.site returns 2xx with a tiny body; some endpoints return 204 empty.
     const respText = await outRes.text().catch(() => "");
     const snippet = String(respText || "").slice(0, 300);
 
@@ -375,6 +390,8 @@ export default async function handler(req, res) {
       endpoint: endpoint_url,
       http_status: outRes.status,
       response_snippet: snippet,
+      sent_bytes: Buffer.byteLength(xml, "utf8"),
+      newsml_news_item_id: newsItemId,
     });
   }
 
