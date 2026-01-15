@@ -9,7 +9,7 @@
 export const config = { runtime: "nodejs" };
 
 // Change this string any time you want to verify what Vercel is *actually* running.
-const HANDLER_VERSION = "integrator-request@2026-01-15T04:15Z";
+const HANDLER_VERSION = "integrator-request@2026-01-15T04:30Z";
 
 /* ---------------- tiny utils ---------------- */
 
