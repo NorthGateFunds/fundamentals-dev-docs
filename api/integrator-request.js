@@ -1,3 +1,6 @@
+// app/api/integrator-request/route.js (or pages/api/integrator-request.js)
+// (keep path the same as your repo expects)
+
 export const config = { runtime: "nodejs" };
 
 function send(res, status, body) {
@@ -31,11 +34,194 @@ function cleanStr(v) {
   return s.length ? s : null;
 }
 
-const ALLOWED_KINDS = new Set([
-  "integration",
-  "push_test",
-  "push_enable",
-]);
+function xmlEscape(s) {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function dateIdFromIso(iso) {
+  const d = new Date(iso);
+  const yyyy = String(d.getUTCFullYear()).padStart(4, "0");
+  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  return `${yyyy}${mm}${dd}`;
+}
+
+function dateTimeFromIso(iso) {
+  const d = new Date(iso);
+  const yyyy = String(d.getUTCFullYear()).padStart(4, "0");
+  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const mi = String(d.getUTCMinutes()).padStart(2, "0");
+  const ss = String(d.getUTCSeconds()).padStart(2, "0");
+  return `${yyyy}${mm}${dd}T${hh}${mi}${ss}+0000`;
+}
+
+function buildPublicIdentifier({ providerId, dateId, newsItemId, revisionId }) {
+  return `urn:newsml:${providerId}:${dateId}:${newsItemId}:${revisionId}`;
+}
+
+function normalizeXhtmlDoc(innerHtml, titleText) {
+  const safeTitle = titleText ? xmlEscape(titleText) : "";
+  const body = (innerHtml || "").trim();
+  return `<html xmlns="http://www.w3.org/1999/xhtml"><head><title>${safeTitle}</title></head><body>${body}</body></html>`;
+}
+
+function makeTestNewsML({ providerId, providerName, createdIso, newsItemId }) {
+  const dt = dateTimeFromIso(createdIso);
+  const dateId = dateIdFromIso(createdIso);
+  const revisionId = "1";
+  const publicIdentifier = buildPublicIdentifier({
+    providerId,
+    dateId,
+    newsItemId,
+    revisionId,
+  });
+
+  const title = "Fundamentals Wire — HTTPS Push Test Delivery";
+  const dateline = "NEW YORK--(FUNDAMENTALS WIRE)--" + createdIso.slice(0, 10);
+
+  const bodyXhtml = normalizeXhtmlDoc(
+    `<p><b>This is a test delivery.</b></p>
+     <p>If you can read this, your endpoint accepted an HTTPS POST containing NewsML 1.2.</p>
+     <p>newsItemId: <code>${xmlEscape(newsItemId)}</code></p>
+     <p>created: <code>${xmlEscape(createdIso)}</code></p>`,
+    ""
+  );
+
+  const headlineDoc = normalizeXhtmlDoc(
+    `<p class="fwtextaligncenter"><b>${xmlEscape(title)}</b></p>`,
+    ""
+  );
+
+  const minimalCss = `.fwtextaligncenter { text-align: center; }`;
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<NewsML xmlns="http://iptc.org/std/NewsML/1.2/" Version="1.2">
+  <Catalog Href="https://wire.fundamentals.so/schema/newsml/FundamentalsWireNewsMLCatalog.xml"/>
+
+  <NewsEnvelope>
+    <DateAndTime>${dt}</DateAndTime>
+
+    <SentFrom>
+      <Party FormalName="${xmlEscape(providerName)}">
+        <Property FormalName="ProviderProfile" Value="FundamentalsWireProfile"/>
+        <Property FormalName="ProviderProfileVersion" Value="1.0"/>
+      </Party>
+    </SentFrom>
+
+    <NewsService FormalName="${xmlEscape(providerName)}"/>
+    <NewsProduct FormalName="PressRelease"/>
+  </NewsEnvelope>
+
+  <NewsItem>
+    <Identification>
+      <NewsIdentifier>
+        <ProviderId>${xmlEscape(providerId)}</ProviderId>
+        <DateId>${dateId}</DateId>
+        <NewsItemId>${xmlEscape(newsItemId)}</NewsItemId>
+        <RevisionId PreviousRevision="0" Update="N">${revisionId}</RevisionId>
+        <PublicIdentifier>${xmlEscape(publicIdentifier)}</PublicIdentifier>
+      </NewsIdentifier>
+    </Identification>
+
+    <NewsManagement>
+      <NewsItemType FormalName="Release"/>
+      <FirstCreated>${dt}</FirstCreated>
+      <ThisRevisionCreated>${dt}</ThisRevisionCreated>
+      <Status FormalName="Usable"/>
+    </NewsManagement>
+
+    <NewsComponent>
+      <BasisForChoice Rank="1">./NewsComponent/Role</BasisForChoice>
+
+      <NewsLines>
+        <HeadLine>${xmlEscape(title)}</HeadLine>
+        <DateLine>${xmlEscape(dateline)}</DateLine>
+        <SlugLine>HTTPS Push Test</SlugLine>
+      </NewsLines>
+
+      <DescriptiveMetadata>
+        <Language FormalName="en"/>
+        <Genre FormalName="Release"/>
+      </DescriptiveMetadata>
+
+      <NewsComponent>
+        <Role FormalName="HeadLine"/>
+        <BasisForChoice Rank="1">./ContentItem/Format</BasisForChoice>
+        <DescriptiveMetadata><Language FormalName="en"/></DescriptiveMetadata>
+        <ContentItem Duid="${xmlEscape(newsItemId)}.headline">
+          <Format FormalName="XHTML"/>
+          <MimeType FormalName="text/xhtml"/>
+          <DataContent>${headlineDoc}</DataContent>
+        </ContentItem>
+      </NewsComponent>
+
+      <NewsComponent>
+        <Role FormalName="Body"/>
+        <BasisForChoice Rank="1">./ContentItem/Format</BasisForChoice>
+        <DescriptiveMetadata><Language FormalName="en"/></DescriptiveMetadata>
+        <ContentItem Duid="${xmlEscape(newsItemId)}.body">
+          <Format FormalName="XHTML"/>
+          <MimeType FormalName="text/xhtml"/>
+          <DataContent>${bodyXhtml}</DataContent>
+        </ContentItem>
+      </NewsComponent>
+
+      <NewsComponent>
+        <Role FormalName="StyleSheet"/>
+        <BasisForChoice Rank="1">./ContentItem/Format</BasisForChoice>
+        <DescriptiveMetadata><Language FormalName="en"/></DescriptiveMetadata>
+        <ContentItem Duid="${xmlEscape(newsItemId)}.stylesheet">
+          <Format FormalName="CSS"/>
+          <MimeType FormalName="text/css"/>
+          <DataContent>${xmlEscape(minimalCss)}</DataContent>
+        </ContentItem>
+      </NewsComponent>
+
+    </NewsComponent>
+  </NewsItem>
+</NewsML>`;
+}
+
+function isHttpsUrl(u) {
+  try {
+    const url = new URL(u);
+    return url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function normalizeKindAndEnv(kind, deliveryEnvRaw) {
+  // DB constraint (wire.integrator_requests_kind_check) allows:
+  // - push_access
+  // - integration
+  //
+  // Accept legacy client kinds and map them.
+  const delivery_env = cleanStr(deliveryEnvRaw);
+
+  if (kind === "push_test") {
+    return { dbKind: "push_access", delivery_env: delivery_env || "test", isTest: true };
+  }
+  if (kind === "push_enable") {
+    return { dbKind: "push_access", delivery_env: delivery_env || "production", isTest: false };
+  }
+  if (kind === "push_access") {
+    const env = delivery_env || "test";
+    return { dbKind: "push_access", delivery_env: env, isTest: env === "test" };
+  }
+  if (kind === "integration") {
+    return { dbKind: "integration", delivery_env, isTest: false };
+  }
+
+  return { dbKind: null, delivery_env, isTest: false };
+}
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -61,14 +247,23 @@ export default async function handler(req, res) {
     return send(res, 400, { ok: false, error: "invalid_json" });
   }
 
-  const kind = cleanStr(body.kind);
+  const incomingKind = cleanStr(body.kind);
   const email = cleanStr(body.email)?.toLowerCase() ?? null;
 
-  if (!kind || !ALLOWED_KINDS.has(kind)) {
+  if (!incomingKind) {
+    return send(res, 400, { ok: false, error: "invalid_kind" });
+  }
+
+  const { dbKind, delivery_env, isTest } = normalizeKindAndEnv(
+    incomingKind,
+    body.delivery_env || body.environment
+  );
+
+  if (!dbKind) {
     return send(res, 400, {
       ok: false,
       error: "invalid_kind",
-      allowed: Array.from(ALLOWED_KINDS),
+      allowed: ["push_access", "integration", "push_test (legacy)", "push_enable (legacy)"],
     });
   }
 
@@ -76,28 +271,34 @@ export default async function handler(req, res) {
     return send(res, 400, { ok: false, error: "invalid_email" });
   }
 
+  const endpoint_url = cleanStr(body.endpoint_url);
+
+  // If this is the Step 1 “test delivery”, an endpoint is required and must be https.
+  if (dbKind === "push_access" && isTest) {
+    if (!endpoint_url) {
+      return send(res, 400, { ok: false, error: "missing_endpoint_url" });
+    }
+    if (!isHttpsUrl(endpoint_url)) {
+      return send(res, 400, { ok: false, error: "endpoint_must_be_https" });
+    }
+  }
+
   /**
-   * IMPORTANT
-   * =========
-   * All tables live in the `wire` schema.
-   * We insert ONLY through an RPC to avoid exposing wire.*
+   * Insert request row via RPC (wire schema).
    */
   const rpcUrl = `${SUPABASE_URL}/rest/v1/rpc/submit_integrator_request`;
 
-  const payload = {
-    p_kind: kind,
+  const rpcPayload = {
+    p_kind: dbKind,
     p_email: email,
     p_company: cleanStr(body.company),
     p_name: cleanStr(body.name),
     p_role: cleanStr(body.role),
-    p_endpoint_url: cleanStr(body.endpoint_url),
-    p_delivery_env: cleanStr(body.delivery_env || body.environment),
+    p_endpoint_url: endpoint_url,
+    p_delivery_env: delivery_env,
     p_format_preference: cleanStr(body.format_preference),
     p_notes: cleanStr(body.notes),
-    p_source_path:
-      cleanStr(body.source_path) ||
-      cleanStr(req.headers.referer) ||
-      null,
+    p_source_path: cleanStr(body.source_path) || cleanStr(req.headers.referer) || null,
     p_user_agent: cleanStr(req.headers["user-agent"]),
   };
 
@@ -110,13 +311,10 @@ export default async function handler(req, res) {
         authorization: `Bearer ${SERVICE_ROLE}`,
         "content-type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(rpcPayload),
     });
-  } catch (err) {
-    return send(res, 502, {
-      ok: false,
-      error: "supabase_unreachable",
-    });
+  } catch {
+    return send(res, 502, { ok: false, error: "supabase_unreachable" });
   }
 
   if (!rpcRes.ok) {
@@ -129,8 +327,56 @@ export default async function handler(req, res) {
     });
   }
 
-  // RPC returns the inserted row id (uuid)
+  // RPC returns uuid
   const id = await rpcRes.json().catch(() => null);
+
+  /**
+   * Step 1 test: actually POST a NewsML file to their endpoint and report the result.
+   * (We’re not re-engineering schema here — just returning a definitive “accepted by endpoint” signal.)
+   */
+  if (dbKind === "push_access" && isTest) {
+    const createdIso = new Date().toISOString();
+    const newsItemId = String(id || crypto.randomUUID());
+    const xml = makeTestNewsML({
+      providerId: "wire.fundamentals.so",
+      providerName: "Fundamentals Wire",
+      createdIso,
+      newsItemId,
+    });
+
+    let outRes;
+    try {
+      outRes = await fetch(endpoint_url, {
+        method: "POST",
+        headers: {
+          "content-type": "application/xml; charset=utf-8",
+          "user-agent": "FundamentalsWireHTTPSPushTest/1.0",
+          "x-fw-push-test": "1",
+        },
+        body: xml,
+      });
+    } catch (e) {
+      return send(res, 200, {
+        ok: true,
+        id,
+        delivered: false,
+        endpoint: endpoint_url,
+        error: "endpoint_unreachable",
+      });
+    }
+
+    const respText = await outRes.text().catch(() => "");
+    const snippet = String(respText || "").slice(0, 300);
+
+    return send(res, 200, {
+      ok: true,
+      id,
+      delivered: outRes.ok,
+      endpoint: endpoint_url,
+      http_status: outRes.status,
+      response_snippet: snippet,
+    });
+  }
 
   return send(res, 200, { ok: true, id });
 }
