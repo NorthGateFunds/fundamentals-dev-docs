@@ -1,3 +1,4 @@
+// FW_BUILD_ID=2026-01-15T08:30:31.267Z
 
 // --- FW_BASE override (injected) ---
 const FW_BASE_META = document.querySelector('meta[name="fw-base"]');
