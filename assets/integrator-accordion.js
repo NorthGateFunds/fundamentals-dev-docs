@@ -96,7 +96,11 @@
     return Promise.resolve();
   }
 
-  async function submitIntegratorRequest(kind, payload) {
+  // NOTE:
+  // This hits /api/integrator-request which MUST be backed by a real server.
+  // On Cloudflare Pages, implement it as a Pages Function at:
+  //   functions/api/integrator-request.js
+  async function submitIntegratorRequest(_kind, payload) {
     var res = await fetch("/api/integrator-request", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -164,6 +168,9 @@
     // Forms
     var testForm = qs("#fwTestForm", root) || qs('[data-fw-step1-form]', root);
     var enableForm = qs("#fwEnableForm", root) || qs('[data-fw-step2-form]', root);
+
+    // Keep Step 1 email to reuse in Step 2 if Step 2 doesn’t ask for it
+    var lastEmail = "";
 
     var unlocked = false;
 
@@ -257,15 +264,22 @@
         var email = (emailEl && emailEl.value ? emailEl.value : "").trim();
         var endpoint = (endpointEl && endpointEl.value ? endpointEl.value : "").trim();
 
+        lastEmail = email;
+
         try {
-          await submitIntegratorRequest("push_test", {
-            kind: "push_test",
+          // IMPORTANT:
+          // DB expects kind = 'push_access' (matches your wire.integrator_requests + RPC).
+          // We treat Step 1 as a "push_access" request with delivery_env='test'.
+          await submitIntegratorRequest("push_access", {
+            kind: "push_access",
             email: email,
             endpoint_url: endpoint,
+            delivery_env: "test",
+            notes: "Docs: HTTPS Push Step 1 (test delivery).",
             source_path: window.location.pathname,
           });
 
-          setStatus(testForm, "Test queued. Expect delivery within ~1–2 minutes.");
+          setStatus(testForm, "Submitted. Expect a test delivery within ~1–2 minutes.");
           setUnlocked(true);
           setActiveStep(2);
         } catch (err) {
@@ -317,16 +331,27 @@
         var phone = (phoneEl && phoneEl.value ? phoneEl.value : "").trim();
         var prod = (prodEl && prodEl.value ? prodEl.value : "").trim();
 
+        // If Step 2 has no email field, reuse Step 1 email.
+        var email2 = lastEmail;
+        if (!email2) {
+          // As an extra fallback, try to read the Step 1 email field if it still exists
+          var step1EmailEl = qs("#fw_email", root) || qs('input[name="email"]', root);
+          email2 = (step1EmailEl && step1EmailEl.value ? step1EmailEl.value : "").trim();
+        }
+
         try {
-          await submitIntegratorRequest("push_enable", {
-            kind: "push_enable",
+          // Step 2 is still a push_access request; we record production endpoint + ops contact.
+          await submitIntegratorRequest("push_access", {
+            kind: "push_access",
+            email: email2,
             company: company,
-            phone: phone,
             endpoint_url: prod,
+            delivery_env: "production",
+            notes: phone ? "Ops contact phone: " + phone : "Docs: HTTPS Push Step 2 (enable production).",
             source_path: window.location.pathname,
           });
 
-          setStatus(enableForm, "Enabled. Your production endpoint is configured for ongoing deliveries.");
+          setStatus(enableForm, "Submitted. Production delivery is now configured for ongoing publishes.");
         } catch (err) {
           setStatus(enableForm, "Couldn’t submit. Try again.");
         } finally {

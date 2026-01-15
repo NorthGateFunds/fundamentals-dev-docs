@@ -1,4 +1,3 @@
-// api/integrator-request.js
 export const config = { runtime: "nodejs" };
 
 function send(res, status, body) {
@@ -32,6 +31,12 @@ function cleanStr(v) {
   return s.length ? s : null;
 }
 
+const ALLOWED_KINDS = new Set([
+  "integration",
+  "push_test",
+  "push_enable",
+]);
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("allow", "POST");
@@ -42,28 +47,41 @@ export default async function handler(req, res) {
   const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!SUPABASE_URL || !SERVICE_ROLE) {
-    return send(res, 500, { ok: false, error: "missing_env" });
+    return send(res, 500, {
+      ok: false,
+      error: "missing_env",
+      required: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+    });
   }
 
-  let body = {};
+  let body;
   try {
     body = await readJson(req);
   } catch {
     return send(res, 400, { ok: false, error: "invalid_json" });
   }
 
-  const kind = String(body.kind || "");
-  const email = String(body.email || "").trim().toLowerCase();
+  const kind = cleanStr(body.kind);
+  const email = cleanStr(body.email)?.toLowerCase() ?? null;
 
-  if (kind !== "push_access" && kind !== "integration") {
-    return send(res, 400, { ok: false, error: "invalid_kind" });
+  if (!kind || !ALLOWED_KINDS.has(kind)) {
+    return send(res, 400, {
+      ok: false,
+      error: "invalid_kind",
+      allowed: Array.from(ALLOWED_KINDS),
+    });
   }
+
   if (!email || !isEmail(email)) {
     return send(res, 400, { ok: false, error: "invalid_email" });
   }
 
-  // We CANNOT write to wire.* through /rest/v1/table unless Supabase exposes the wire schema.
-  // So we call an RPC in public that inserts into wire.integrator_requests.
+  /**
+   * IMPORTANT
+   * =========
+   * All tables live in the `wire` schema.
+   * We insert ONLY through an RPC to avoid exposing wire.*
+   */
   const rpcUrl = `${SUPABASE_URL}/rest/v1/rpc/submit_integrator_request`;
 
   const payload = {
@@ -73,34 +91,46 @@ export default async function handler(req, res) {
     p_name: cleanStr(body.name),
     p_role: cleanStr(body.role),
     p_endpoint_url: cleanStr(body.endpoint_url),
-    // accept either delivery_env or environment from your forms
     p_delivery_env: cleanStr(body.delivery_env || body.environment),
     p_format_preference: cleanStr(body.format_preference),
     p_notes: cleanStr(body.notes),
-    p_source_path: cleanStr(body.source_path) || cleanStr(req?.headers?.referer) || null,
+    p_source_path:
+      cleanStr(body.source_path) ||
+      cleanStr(req.headers.referer) ||
+      null,
     p_user_agent: cleanStr(req.headers["user-agent"]),
   };
 
-  const r = await fetch(rpcUrl, {
-    method: "POST",
-    headers: {
-      apikey: SERVICE_ROLE,
-      authorization: `Bearer ${SERVICE_ROLE}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!r.ok) {
-    const t = await r.text().catch(() => "");
-    return send(res, 500, {
+  let rpcRes;
+  try {
+    rpcRes = await fetch(rpcUrl, {
+      method: "POST",
+      headers: {
+        apikey: SERVICE_ROLE,
+        authorization: `Bearer ${SERVICE_ROLE}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    return send(res, 502, {
       ok: false,
-      error: "insert_failed",
-      details: t.slice(0, 500),
+      error: "supabase_unreachable",
     });
   }
 
-  // Supabase RPC returns the function result directly (uuid as JSON string)
-  const id = await r.json().catch(() => null);
+  if (!rpcRes.ok) {
+    const text = await rpcRes.text().catch(() => "");
+    return send(res, 500, {
+      ok: false,
+      error: "rpc_failed",
+      status: rpcRes.status,
+      details: text.slice(0, 500),
+    });
+  }
+
+  // RPC returns the inserted row id (uuid)
+  const id = await rpcRes.json().catch(() => null);
+
   return send(res, 200, { ok: true, id });
 }
