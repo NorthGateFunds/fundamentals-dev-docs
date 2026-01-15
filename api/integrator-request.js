@@ -2,7 +2,7 @@
 // Node runtime endpoint for docs site.
 // - Inserts integrator request via Supabase RPC (SECURITY DEFINER)
 // - If Step 1 test (push_access + delivery_env=test), POSTs a minimal NewsML 1.2 XML payload
-//   to the provided HTTPS endpoint and returns delivery status.
+//   to the provided HTTPS endpoint and returns delivery status + headers.
 //
 // NOTE: Keep this file path exactly as your repo expects: api/integrator-request.js
 
@@ -235,6 +235,26 @@ function normalizeKindAndEnv(kind, deliveryEnvRaw) {
   return { dbKind: null, delivery_env, isTest: false };
 }
 
+function pickHeaders(h) {
+  // Return only a few useful headers so the response stays small.
+  const out = {};
+  if (!h || typeof h.get !== "function") return out;
+  const keys = [
+    "content-type",
+    "content-length",
+    "server",
+    "date",
+    "cf-ray",
+    "x-vercel-id",
+    "x-vercel-cache",
+  ];
+  for (const k of keys) {
+    const v = h.get(k);
+    if (v) out[k] = v;
+  }
+  return out;
+}
+
 /* ---------------- handler ---------------- */
 
 export default async function handler(req, res) {
@@ -356,10 +376,16 @@ export default async function handler(req, res) {
       newsItemId,
     });
 
+    // Hard timeout so we don’t hang (common cause of “nothing happened”)
+    const controller = new AbortController();
+    const timeoutMs = 12_000;
+    const t = setTimeout(() => controller.abort(), timeoutMs);
+
     let outRes;
     try {
       outRes = await fetch(endpoint_url, {
         method: "POST",
+        signal: controller.signal,
         headers: {
           "content-type": "application/xml; charset=utf-8",
           "user-agent": "FundamentalsWireHTTPSPushTest/1.0",
@@ -369,14 +395,24 @@ export default async function handler(req, res) {
         },
         body: xml,
       });
-    } catch {
+    } catch (e) {
+      clearTimeout(t);
+      const msg = String(e && e.message ? e.message : e || "");
+      const isAbort = msg.toLowerCase().includes("abort");
       return send(res, 200, {
         ok: true,
         id,
+        attempted: true,
         delivered: false,
         endpoint: endpoint_url,
-        error: "endpoint_unreachable",
+        error: isAbort ? "endpoint_timeout" : "endpoint_unreachable",
+        error_detail: msg.slice(0, 200),
+        timeout_ms: timeoutMs,
+        sent_bytes: Buffer.byteLength(xml, "utf8"),
+        newsml_news_item_id: newsItemId,
       });
+    } finally {
+      clearTimeout(t);
     }
 
     // Webhook.site returns 2xx with a tiny body; some endpoints return 204 empty.
@@ -386,9 +422,11 @@ export default async function handler(req, res) {
     return send(res, 200, {
       ok: true,
       id,
+      attempted: true,
       delivered: outRes.ok,
       endpoint: endpoint_url,
       http_status: outRes.status,
+      response_headers: pickHeaders(outRes.headers),
       response_snippet: snippet,
       sent_bytes: Buffer.byteLength(xml, "utf8"),
       newsml_news_item_id: newsItemId,
