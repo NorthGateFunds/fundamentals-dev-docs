@@ -15,11 +15,19 @@
       content="Integrate with Fundamentals Wire via HTTPS Push. Receive full NewsML 1.2 press releases as immutable XML payloads with stable identifiers and predictable delivery semantics."
     />
 
-    <!-- Page-scoped styles ONLY for the accordions + forms (you said you already added CSS for the wizard grid) -->
+    <!-- Prism (syntax highlighting + line numbers) -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.css"
+    />
+
     <style>
       .inlineFormWrap { margin-top: 12px; }
 
-      /* HARD HIDE until opened */
       .formPanel[aria-hidden="true"] { display: none; }
 
       .formPanel {
@@ -73,39 +81,18 @@
 
       .formPanelBody { padding: 14px; }
 
-      /* Form controls */
-      .fgrid {
-        display: grid;
-        grid-template-columns: repeat(12, minmax(0, 1fr));
-        gap: 10px;
-      }
+      .fgrid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 10px; }
       .fcol-12 { grid-column: span 12; }
       .fcol-6 { grid-column: span 6; }
       .fcol-4 { grid-column: span 4; }
       .fcol-8 { grid-column: span 8; }
-      @media (max-width: 820px) {
-        .fcol-6, .fcol-4, .fcol-8 { grid-column: span 12; }
-      }
+      @media (max-width: 820px) { .fcol-6, .fcol-4, .fcol-8 { grid-column: span 12; } }
 
-      .flabel {
-        display: block;
-        font-size: 12px;
-        font-weight: 850;
-        color: rgba(11, 18, 32, 0.82);
-        letter-spacing: -0.005em;
-        margin: 0 0 6px;
-      }
-
-      .fhelp {
-        margin: 6px 0 0;
-        font-size: 12px;
-        color: var(--muted);
-        line-height: 1.45;
-      }
+      .flabel { display:block; font-size:12px; font-weight:850; color:rgba(11,18,32,.82); margin:0 0 6px; }
+      .fhelp { margin: 6px 0 0; font-size: 12px; color: var(--muted); line-height: 1.45; }
 
       .finput, .fselect, .ftextarea {
         width: 100%;
-        max-width: 100%;
         border: 1px solid rgba(15, 23, 42, 0.14);
         border-radius: 12px;
         padding: 10px 11px;
@@ -114,12 +101,7 @@
         background: #fff;
         color: var(--text);
       }
-
-      .ftextarea {
-        min-height: 92px;
-        resize: vertical;
-        line-height: 1.5;
-      }
+      .ftextarea { min-height: 92px; resize: vertical; line-height: 1.5; }
 
       .finput:focus, .fselect:focus, .ftextarea:focus {
         border-color: rgba(10, 102, 194, 0.35);
@@ -127,25 +109,13 @@
       }
 
       .frow {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: flex-end;
-        margin-top: 12px;
-        border-top: 1px solid var(--border2);
-        padding-top: 12px;
+        display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-end;
+        margin-top:12px; border-top:1px solid var(--border2); padding-top:12px;
       }
 
-      .fstatus {
-        margin-top: 10px;
-        font-size: 12.5px;
-        color: var(--muted);
-        line-height: 1.5;
-      }
+      .fstatus { margin-top:10px; font-size:12.5px; color:var(--muted); line-height:1.5; }
       .fstatus strong { color: var(--text); }
 
-      /* Subtle callout */
       .fwAllowlist {
         border: 1px solid rgba(15,23,42,0.10);
         background: rgba(15,23,42,0.02);
@@ -156,19 +126,14 @@
         font-size: 13px;
         line-height: 1.5;
       }
-
       .fwAllowlistHead { font-weight: 850; margin-bottom: 6px; }
 
       .fwPill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 10px;
-        border-radius: 999px;
+        display: inline-flex; align-items:center; gap: 8px;
+        padding: 6px 10px; border-radius: 999px;
         border: 1px solid rgba(15,23,42,0.12);
         background: rgba(15,23,42,0.03);
-        font-size: 12px;
-        font-weight: 800;
+        font-size: 12px; font-weight: 800;
         color: rgba(11,18,32,0.88);
         white-space: nowrap;
       }
@@ -199,158 +164,20 @@
       }
       .btnPrimary:disabled { opacity: 0.55; cursor: not-allowed; }
 
-      /* Badge inside step headers */
-      .fwStepTop {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 10px;
-      }
-
-      .fwStepH {
-        margin: 0;
-        font-size: 14px;
-        font-weight: 950;
-        letter-spacing: -0.01em;
-        color: var(--text);
-        line-height: 1.2;
-      }
-
-      .fwStepP {
-        margin: 6px 0 0;
-        color: var(--muted);
-        font-size: 13px;
-        line-height: 1.5;
-        max-width: 52ch;
-      }
-
+      .fwStepTop { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:10px; }
+      .fwStepH { margin:0; font-size:14px; font-weight:950; color:var(--text); line-height:1.2; }
+      .fwStepP { margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.5; max-width:52ch; }
       .fwBadge {
-        display: inline-flex;
-        align-items: center;
-        border: 1px solid rgba(15, 23, 42, 0.12);
+        display:inline-flex; align-items:center;
+        border:1px solid rgba(15, 23, 42, 0.12);
         background: rgba(15, 23, 42, 0.03);
-        border-radius: 999px;
-        padding: 6px 10px;
-        font-size: 12px;
-        font-weight: 900;
+        border-radius:999px;
+        padding:6px 10px;
+        font-size:12px;
+        font-weight:900;
         color: rgba(11, 18, 32, 0.88);
         white-space: nowrap;
       }
-
-      /* --- Pretty code blocks (docs-grade) --- */
-/* === Make code blocks look professional (override-safe) === */
-.codeBlock{
-  border:1px solid rgba(15,23,42,.12);
-  border-radius:16px;
-  overflow:hidden;
-  background:#fff;
-  box-shadow:0 1px 0 rgba(15,23,42,.03);
-}
-
-.codeBlockTop{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:10px 12px;
-  border-bottom:1px solid rgba(15,23,42,.10);
-  background:linear-gradient(to bottom, rgba(248,250,252,.9), rgba(248,250,252,.6));
-}
-
-.codeBlockTitle{
-  font-size:12px;
-  font-weight:950;
-  letter-spacing:-0.01em;
-  color:rgba(11,18,32,.78);
-  text-transform:uppercase;
-}
-
-.codeBlockMeta{
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  font-size:12px;
-  font-weight:850;
-  color:rgba(11,18,32,.55);
-  white-space:nowrap;
-}
-
-.codeCopyBtn{
-  border:1px solid rgba(15,23,42,.14);
-  background:#fff;
-  color:rgba(11,18,32,.86);
-  border-radius:999px;
-  height:30px;
-  padding:0 12px;
-  cursor:pointer;
-  font-weight:900;
-  font-size:12px;
-}
-.codeCopyBtn:hover{ background:rgba(15,23,42,.03); }
-.codeCopyBtn:active{ transform:translateY(0.5px); }
-
-/* IMPORTANT: force real pre formatting (fix your screenshot issue) */
-.codeBlock pre,
-.codeBlock pre.prettyCode,
-.codeBlock pre.code{
-  margin:0;
-  padding:14px 14px 14px 16px;
-  background:rgba(15,23,42,.03);
-  border-top:1px solid rgba(255,255,255,.7);
-  overflow:auto;
-  max-height:520px;
-
-  /* hard overrides */
-  white-space:pre !important;
-  word-break:normal !important;
-  overflow-wrap:normal !important;
-
-  font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size:12.5px;
-  line-height:1.7;
-  color:rgba(11,18,32,.92);
-  tab-size:2;
-}
-
-/* Make code text not inherit odd wrapping rules */
-.codeBlock code{
-  white-space:inherit !important;
-  word-break:inherit !important;
-  overflow-wrap:inherit !important;
-}
-
-/* Nicer scrollbars (webkit) */
-.codeBlock pre::-webkit-scrollbar{ height:10px; width:10px; }
-.codeBlock pre::-webkit-scrollbar-thumb{
-  background:rgba(15,23,42,.18);
-  border-radius:999px;
-}
-.codeBlock pre::-webkit-scrollbar-track{ background:rgba(15,23,42,.04); }
-
-/* Optional: make the two example cards breathe a bit */
-#examples + p + .card{ margin-top:14px; }
-#examples + p + .card + .card{ margin-top:14px; }
-
-pre.code,
-pre.prettyCode {
-  margin: 0;
-  padding: 12px;
-  overflow: auto;
-  max-height: 520px; /* prevents “infinite wall” */
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 12.5px;
-  line-height: 1.6;
-  color: rgba(11, 18, 32, 0.92);
-  white-space: pre;         /* preserve formatting */
-  tab-size: 2;
-}
-
-/* subtle selection */
-pre.code::selection,
-pre.prettyCode::selection {
-  background: rgba(10, 102, 194, 0.20);
-}
 
       .fwLockNote {
         border: 1px dashed rgba(15, 23, 42, 0.18);
@@ -362,20 +189,89 @@ pre.prettyCode::selection {
         font-size: 12.5px;
         line-height: 1.5;
       }
+
+      /* ===== Premium highlighted code blocks ===== */
+      .fwCode {
+        border: 1px solid rgba(15,23,42,.12);
+        border-radius: 16px;
+        overflow: hidden;
+        background: #0b1220;
+        box-shadow: 0 1px 0 rgba(15,23,42,.03);
+      }
+
+      .fwCodeTop {
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        padding:10px 12px;
+        border-bottom: 1px solid rgba(255,255,255,.10);
+        background: linear-gradient(to bottom, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      }
+
+      .fwCodeLeft { display:flex; align-items:center; gap:10px; min-width:0; }
+
+      .fwCodeTitle {
+        font-size: 11px;
+        font-weight: 950;
+        letter-spacing: .09em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,.78);
+        white-space: nowrap;
+      }
+
+      .fwCodeMeta {
+        display:inline-flex;
+        align-items:center;
+        gap:10px;
+        font-size: 12px;
+        font-weight: 800;
+        color: rgba(255,255,255,.55);
+        white-space: nowrap;
+      }
+
+      .fwCodeBtn {
+        border: 1px solid rgba(255,255,255,.16);
+        background: rgba(255,255,255,.06);
+        color: rgba(255,255,255,.90);
+        border-radius: 999px;
+        height: 30px;
+        padding: 0 12px;
+        cursor: pointer;
+        font-weight: 900;
+        font-size: 12px;
+      }
+      .fwCodeBtn:hover { background: rgba(255,255,255,.10); }
+      .fwCodeBtn:active { transform: translateY(0.5px); }
+
+      .fwCode pre[class*="language-"] {
+        margin:0 !important;
+        background: transparent !important;
+        overflow:auto !important;
+        max-height: 560px;
+        white-space: pre !important;
+        word-break: normal !important;
+        overflow-wrap: normal !important;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+        font-size: 12.5px !important;
+        line-height: 1.75 !important;
+        tab-size: 2;
+      }
+
+      .fwCode pre.line-numbers { padding-left: 3.4em !important; }
+      .fwCode .line-numbers .line-numbers-rows { border-right: 1px solid rgba(255,255,255,.10) !important; }
+      .fwCode .line-numbers-rows > span:before { color: rgba(255,255,255,.28) !important; }
+
+      .fwCode pre::-webkit-scrollbar{ height:10px; width:10px; }
+      .fwCode pre::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.18); border-radius: 999px; }
+      .fwCode pre::-webkit-scrollbar-track{ background: rgba(255,255,255,.06); }
     </style>
   </head>
 
   <body>
     <div class="topbar">
       <div class="left">
-        <button
-          class="iconBtn"
-          data-nav-toggle
-          aria-label="Open navigation"
-          aria-expanded="false"
-        >
-          ☰
-        </button>
+        <button class="iconBtn" data-nav-toggle aria-label="Open navigation" aria-expanded="false">☰</button>
         <div style="font-weight:700;">Fundamentals Wire</div>
       </div>
       <div style="color:var(--muted); font-size:12px;">Developer Docs</div>
@@ -408,7 +304,6 @@ pre.prettyCode::selection {
 
       <main class="main">
         <div class="content">
-          <!-- HERO -->
           <h1 class="h1">NewsML over HTTPS Push</h1>
 
           <p class="lead">
@@ -419,19 +314,10 @@ pre.prettyCode::selection {
           <!-- TOP CTA -->
           <div class="card">
             <h3 style="margin-top:0;">Integrate in one afternoon</h3>
-            <p style="margin-bottom:14px;">
-              Register an HTTPS endpoint, test delivery, then enable ongoing delivery.
-            </p>
+            <p style="margin-bottom:14px;">Register an HTTPS endpoint, test delivery, then enable ongoing delivery.</p>
 
             <div class="ctaList" style="margin-top:12px;">
-              <!-- Push access opens accordion -->
-              <a
-                class="ctaRow ctaRowPrimary"
-                href="#"
-                data-open-accordion="pushAccess"
-                aria-controls="pushAccessAccordion"
-                aria-expanded="false"
-              >
+              <a class="ctaRow ctaRowPrimary" href="#" data-open-accordion="pushAccess" aria-controls="pushAccessAccordion" aria-expanded="false">
                 <div class="ctaLeft">
                   <div class="ctaTitle">Request push access</div>
                   <div class="ctaDesc">Add your endpoints. We’ll send a live test delivery and unlock permanent push.</div>
@@ -447,13 +333,7 @@ pre.prettyCode::selection {
                 <div class="ctaRight">View examples →</div>
               </a>
 
-              <a
-                class="ctaRow"
-                href="#"
-                data-open-accordion="integration"
-                aria-controls="integrationAccordion"
-                aria-expanded="false"
-              >
+              <a class="ctaRow" href="#" data-open-accordion="integration" aria-controls="integrationAccordion" aria-expanded="false">
                 <div class="ctaLeft">
                   <div class="ctaTitle">Request an integration</div>
                   <div class="ctaDesc">Have routing/compliance constraints? Tell us what you’re building.</div>
@@ -462,9 +342,8 @@ pre.prettyCode::selection {
               </a>
             </div>
 
-            <!-- Accordion area lives INSIDE this card -->
+            <!-- Accordions kept intact -->
             <div class="inlineFormWrap">
-              <!-- PUSH ACCESS ACCORDION (WIZARD OPTION B) -->
               <div class="formPanel" id="pushAccessAccordion" aria-hidden="true">
                 <div class="formPanelHeader">
                   <div>
@@ -473,15 +352,11 @@ pre.prettyCode::selection {
                       Step 1 sends a test delivery to your <strong>test</strong> endpoint. Step 2 enables ongoing delivery to your <strong>production</strong> endpoint.
                     </div>
                   </div>
-                  <button class="formCloseBtn" type="button" data-close-accordion="pushAccess" aria-label="Close">
-                    Close
-                  </button>
+                  <button class="formCloseBtn" type="button" data-close-accordion="pushAccess" aria-label="Close">Close</button>
                 </div>
 
                 <div class="formPanelBody">
-                  <!-- Wizard grid (you added CSS already; this markup enables it) -->
                   <div class="fwWizardGrid" data-fw-wizard>
-                    <!-- STEP 1 -->
                     <section class="fwStep fwStepTest" data-fw-step-view="1">
                       <div class="fwStepTop">
                         <div>
@@ -496,16 +371,12 @@ pre.prettyCode::selection {
                         <div style="margin-bottom:8px;">
                           <span style="color:var(--muted);">User-Agent:</span>
                           <span class="fwPill" data-copy-key="ua" data-copy-value="FundamentalsWire/1.0">FundamentalsWire/1.0</span>
-                          <button class="btnGhost" type="button" data-copy-target="ua" data-copy-value="FundamentalsWire/1.0" style="margin-left:8px;">
-                            Copy
-                          </button>
+                          <button class="btnGhost" type="button" data-copy-target="ua" data-copy-value="FundamentalsWire/1.0" style="margin-left:8px;">Copy</button>
                         </div>
                         <div>
                           <span style="color:var(--muted);">Header:</span>
                           <span class="fwPill" data-copy-key="hdr" data-copy-value="X-FW-Delivery: 1">X-FW-Delivery: 1</span>
-                          <button class="btnGhost" type="button" data-copy-target="hdr" data-copy-value="X-FW-Delivery: 1" style="margin-left:8px;">
-                            Copy
-                          </button>
+                          <button class="btnGhost" type="button" data-copy-target="hdr" data-copy-value="X-FW-Delivery: 1" style="margin-left:8px;">Copy</button>
                         </div>
                       </div>
 
@@ -518,14 +389,8 @@ pre.prettyCode::selection {
 
                           <div class="fcol-6">
                             <label class="flabel" for="fw_test_endpoint">Test endpoint URL</label>
-                            <input
-                              class="finput"
-                              id="fw_test_endpoint"
-                              name="endpoint_url"
-                              type="url"
-                              placeholder="https://example.com/webhooks/fundamentals-wire/newsml-test"
-                              required
-                            />
+                            <input class="finput" id="fw_test_endpoint" name="endpoint_url" type="url"
+                              placeholder="https://example.com/webhooks/fundamentals-wire/newsml-test" required />
                             <div class="fhelp">Use a staging/test URL. Must accept HTTPS POST and return 2xx quickly.</div>
                           </div>
                         </div>
@@ -538,7 +403,6 @@ pre.prettyCode::selection {
                       </form>
                     </section>
 
-                    <!-- STEP 2 -->
                     <section class="fwStep fwStepProd" data-fw-step-view="2">
                       <div class="fwStepTop">
                         <div>
@@ -562,20 +426,14 @@ pre.prettyCode::selection {
 
                           <div class="fcol-6">
                             <label class="flabel" for="fw_phone">Cell phone</label>
-                            <input class="finput" id="fw_phone" name="phone" type="tel" placeholder="+1 (555) 123-4567" />
-                            <div class="fhelp">Optional — used only if your endpoint fails during a live release.</div>
+                            <input class="finput" id="fw_phone" name="phone" type="tel" placeholder="+1 (555) 123-4567" required />
+                            <div class="fhelp">Required — used only if your endpoint fails during a live release.</div>
                           </div>
 
                           <div class="fcol-12">
                             <label class="flabel" for="fw_prod_endpoint">Production endpoint URL</label>
-                            <input
-                              class="finput"
-                              id="fw_prod_endpoint"
-                              name="endpoint_url"
-                              type="url"
-                              placeholder="https://example.com/webhooks/fundamentals-wire/newsml"
-                              required
-                            />
+                            <input class="finput" id="fw_prod_endpoint" name="endpoint_url" type="url"
+                              placeholder="https://example.com/webhooks/fundamentals-wire/newsml" required />
                             <div class="fhelp">This is where published releases will be delivered.</div>
                           </div>
 
@@ -588,9 +446,7 @@ pre.prettyCode::selection {
                         </div>
 
                         <div class="frow">
-                          <button class="btnPrimary" type="submit" id="fwEnableBtn" disabled>
-                            Enable ongoing delivery
-                          </button>
+                          <button class="btnPrimary" type="submit" id="fwEnableBtn" disabled>Enable ongoing delivery</button>
                         </div>
 
                         <div class="fstatus" data-fw-status aria-live="polite"></div>
@@ -600,16 +456,13 @@ pre.prettyCode::selection {
                 </div>
               </div>
 
-              <!-- INTEGRATION ACCORDION -->
               <div class="formPanel" id="integrationAccordion" aria-hidden="true">
                 <div class="formPanelHeader">
                   <div>
                     <div class="formPanelTitle">Request an integration</div>
                     <div class="formPanelSub">Tell us what you’re building.</div>
                   </div>
-                  <button class="formCloseBtn" type="button" data-close-accordion="integration" aria-label="Close">
-                    Close
-                  </button>
+                  <button class="formCloseBtn" type="button" data-close-accordion="integration" aria-label="Close">Close</button>
                 </div>
 
                 <div class="formPanelBody">
@@ -642,201 +495,23 @@ pre.prettyCode::selection {
             </div>
           </div>
 
-          <!-- QUICKSTART -->
-          <div class="card">
-            <h3 style="margin-top:0;">Quickstart</h3>
-            <ol class="list" style="margin-bottom:0;">
-              <li><strong>Provide an HTTPS endpoint</strong> (publicly reachable) and a technical contact.</li>
-              <li><strong>Verify delivery</strong> by returning a fast <strong>2xx</strong>.</li>
-              <li><strong>Enable ongoing delivery</strong> once your handler is ready.</li>
-              <li><strong>Acknowledge fast</strong> (2xx) and process asynchronously (queue/job runner recommended).</li>
-            </ol>
-          </div>
-
-          <!-- CONTRACT -->
-          <h2>Delivery contract</h2>
-
-          <div class="card">
-            <div class="kv">
-              <div class="k">Method</div>
-              <div class="v"><code>POST</code></div>
-
-              <div class="k">Content-Type</div>
-              <div class="v"><code>application/xml; charset=utf-8</code></div>
-
-              <div class="k">Body</div>
-              <div class="v">Full NewsML 1.2 XML (UTF-8)</div>
-
-              <div class="k">Trigger</div>
-              <div class="v">Publish event</div>
-
-              <div class="k">Ack</div>
-              <div class="v">Return <code>2xx</code> to acknowledge receipt</div>
-
-              <div class="k">Retries</div>
-              <div class="v">Non-2xx responses or network failures may be retried. Your endpoint must be idempotent.</div>
-            </div>
-          </div>
-
-          <!-- AUTH -->
-          <h2>Authentication and integrity</h2>
-          <p>
-            Push deliveries can include a request signature header. If enabled for your integration, verify the signature against the
-            <strong>raw request body bytes</strong> (before parsing XML). This prevents tampering and confirms the delivery source.
-          </p>
-
-          <div class="card">
-            <h3 style="margin-top:0;">Recommended handler behavior</h3>
-            <ul class="list" style="margin-bottom:0;">
-              <li>Read raw body bytes.</li>
-              <li>If signature is enabled: verify signature over raw bytes.</li>
-              <li>Enqueue for parsing/storage.</li>
-              <li>Return <code>204</code> (or any <code>2xx</code>) immediately.</li>
-            </ul>
-          </div>
-
-          <!-- IDENTITY -->
-          <h2>Stable identifiers and timestamps</h2>
-
-          <p>
-            NewsML provides two stable identifiers you should treat as primary keys, plus an authoritative publish timestamp.
-            Use these to deduplicate, order, and reconcile deliveries across environments.
-          </p>
-
-          <div class="card">
-            <h3 style="margin-top:0;">What to key on</h3>
-            <div class="kv">
-              <div class="k">Primary release key</div>
-              <div class="v"><code>&lt;NewsItemId&gt;</code> (stable per release)</div>
-
-              <div class="k">Global URN</div>
-              <div class="v"><code>&lt;PublicIdentifier&gt;</code> (globally unique URN)</div>
-
-              <div class="k">Authoritative publish time</div>
-              <div class="v"><code>&lt;FirstCreated&gt;</code> (UTC)</div>
-            </div>
-          </div>
-
-          <!-- MAPPING -->
-          <h2>Where to read what</h2>
-          <p>
-            The document is intentionally structured so an integrator can extract the same canonical values every time.
-            Below is a compact map of “what you probably want” to “where it lives” in the NewsML payload.
-          </p>
-
-          <div class="card">
-            <div class="kv">
-              <div class="k">Headline</div>
-              <div class="v"><code>//NewsComponent/NewsLines/HeadLine</code></div>
-
-              <div class="k">Dateline</div>
-              <div class="v"><code>//NewsComponent/NewsLines/DateLine</code></div>
-
-              <div class="k">Slugline (optional)</div>
-              <div class="v"><code>//NewsComponent/NewsLines/SlugLine</code></div>
-
-              <div class="k">Canonical URL</div>
-              <div class="v">
-                NewsLine <code>ClickThru URL</code> and the XHTML footer link inside body content
-              </div>
-
-              <div class="k">Body content</div>
-              <div class="v">
-                A <code>NewsComponent</code> with <code>&lt;Role FormalName="Body"/&gt;</code> containing an XHTML <code>ContentItem</code>
-              </div>
-
-              <div class="k">Contacts (optional)</div>
-              <div class="v">
-                A <code>NewsComponent</code> with <code>&lt;Role FormalName="Contact"/&gt;</code> containing XHTML
-              </div>
-
-              <div class="k">Assets</div>
-              <div class="v">
-                Separate <code>NewsComponent</code> entries with roles such as <code>Photo</code>, <code>Logo</code>, <code>Document</code>, <code>Video</code>
-              </div>
-            </div>
-          </div>
-
-          <!-- BODY -->
-          <h2>Body content and XHTML</h2>
-          <p>
-            The full release body is delivered as an XHTML document inside a role component with <code>FormalName="Body"</code>.
-            Treat the XHTML as content (not code). If you render it, use a safe XHTML renderer or transform to your preferred internal format.
-          </p>
-
-          <div class="card">
-            <h3 style="margin-top:0;">Canonical URL inside the payload</h3>
-            <p style="margin-bottom:0;">
-              The canonical public URL is present as a “ClickThru URL” NewsLine and also appended to the XHTML body footer as a human-checkable source link.
-              This makes it easy to reconcile your stored payload with the public release page.
-            </p>
-          </div>
-
-          <!-- ASSETS -->
-          <h2>Assets</h2>
-          <p>
-            Photos, logos, documents, and video are emitted as separate components with a role, rank, mime type, size, and an <code>Href</code>.
-            Fetch the asset URL on demand. The payload includes enough metadata to preflight type and size before downloading.
-          </p>
-
-          <div class="card">
-            <div class="kv">
-              <div class="k">Role</div>
-              <div class="v"><code>Photo</code> / <code>Logo</code> / <code>Document</code> / <code>Video</code></div>
-
-              <div class="k">Ordering</div>
-              <div class="v"><code>&lt;Rank&gt;</code> (document order)</div>
-
-              <div class="k">Download URL</div>
-              <div class="v"><code>ContentItem Href="..."</code></div>
-
-              <div class="k">Type / size</div>
-              <div class="v"><code>&lt;MimeType&gt;</code> and <code>&lt;SizeInBytes&gt;</code></div>
-            </div>
-          </div>
-
-          <!-- IDEMPOTENCY -->
-          <h2>Idempotency and retries</h2>
-          <p>
-            Your endpoint should be safe to receive duplicate deliveries. Retries can happen due to network failures, timeouts, or non-2xx responses.
-            Deduplicate on <code>NewsItemId</code> (and optionally <code>PublicIdentifier</code>) before writing downstream state.
-          </p>
-
-          <div class="card">
-            <h3 style="margin-top:0;">Practical guidance</h3>
-            <ul class="list" style="margin-bottom:0;">
-              <li>Return <code>2xx</code> once the payload is durably accepted (e.g., queued).</li>
-              <li>Make storage idempotent: ignore duplicates by primary key.</li>
-              <li>Log the publish timestamp (<code>FirstCreated</code>) for ordering and audit trails.</li>
-            </ul>
-          </div>
-
           <!-- EXAMPLES -->
           <h2 id="examples">Examples</h2>
           <p>
             These examples are intentionally minimal. The goal is to show “what hits your endpoint” and where the canonical values live.
-            You can accept the full payload as-is and store it verbatim alongside parsed fields.
           </p>
 
-          <!-- Replace your two existing "Example ..." cards with this whole block -->
-
-<!-- Replace your two existing "Example ..." cards with this whole block -->
-
-<div class="card">
-  <h3 style="margin-top:0;">Example HTTP request</h3>
-
-  <div class="codeBlock" data-codeblock>
-    <div class="codeBlockTop">
-      <div class="codeBlockTitle">HTTP</div>
-      <div class="codeBlockMeta">
-        <span>POST</span>
-        <span style="opacity:.45;">•</span>
-        <span>application/xml</span>
-      </div>
-      <button class="codeCopyBtn" type="button" data-copy-pre>Copy</button>
-    </div>
-
-    <pre class="prettyCode"><code>POST /webhooks/fundamentals-wire/newsml HTTP/1.1
+          <div class="card">
+            <h3 style="margin-top:0;">Example HTTP request</h3>
+            <div class="fwCode" data-fw-code>
+              <div class="fwCodeTop">
+                <div class="fwCodeLeft">
+                  <div class="fwCodeTitle">HTTP</div>
+                  <div class="fwCodeMeta"><span>POST</span><span style="opacity:.35;">•</span><span>application/xml</span></div>
+                </div>
+                <button class="fwCodeBtn" type="button" data-fw-copy>Copy</button>
+              </div>
+              <pre class="line-numbers"><code class="language-http">POST /webhooks/fundamentals-wire/newsml HTTP/1.1
 Host: example.com
 Content-Type: application/xml; charset=utf-8
 User-Agent: FundamentalsWire/1.0
@@ -847,151 +522,174 @@ X-FW-Signature: t=1700000000,v1=...
 &lt;NewsML xmlns="http://iptc.org/std/NewsML/1.2/" Version="1.2"&gt;
   ...
 &lt;/NewsML&gt;</code></pre>
-  </div>
-</div>
+            </div>
+          </div>
 
-<!-- NEW: real sample payload output -->
-<div class="card">
-  <h3 style="margin-top:0;">Example NewsML payload (test delivery)</h3>
+          <div class="card">
+            <h3 style="margin-top:0;">Example NewsML payload (test delivery)</h3>
 
-  <div class="codeBlock" data-codeblock>
-    <div class="codeBlockTop">
-      <div class="codeBlockTitle">NewsML 1.2 XML</div>
-      <div class="codeBlockMeta">
-        <span>UTF-8</span>
-        <span style="opacity:.45;">•</span>
-        <span>Test delivery</span>
-      </div>
-      <button class="codeCopyBtn" type="button" data-copy-pre>Copy</button>
+            <!-- Store real XML safely as text (not parsed as HTML) -->
+            <template id="fwNewsmlRaw"><?xml version="1.0" encoding="UTF-8"?>
+<NewsML xmlns="http://iptc.org/std/NewsML/1.2/" Version="1.2">
+  <Catalog Href="https://wire.fundamentals.so/schema/newsml/FundamentalsWireNewsMLCatalog.xml"/>
+
+  <NewsEnvelope>
+    <DateAndTime>20260115T202421+0000</DateAndTime>
+
+    <SentFrom>
+      <Party FormalName="Fundamentals Wire">
+        <Property FormalName="ProviderProfile" Value="FundamentalsWireProfile"/>
+        <Property FormalName="ProviderProfileVersion" Value="1.0"/>
+      </Party>
+    </SentFrom>
+
+    <NewsService FormalName="Fundamentals Wire"/>
+    <NewsProduct FormalName="PressRelease"/>
+  </NewsEnvelope>
+
+  <NewsItem>
+    <Identification>
+      <NewsIdentifier>
+        <ProviderId>wire.fundamentals.so</ProviderId>
+        <DateId>20260115</DateId>
+        <NewsItemId>8d8d5c97-24a1-4d21-a013-66cfd0809e12</NewsItemId>
+        <RevisionId PreviousRevision="0" Update="N">1</RevisionId>
+        <PublicIdentifier>urn:newsml:wire.fundamentals.so:20260115:8d8d5c97-24a1-4d21-a013-66cfd0809e12:1</PublicIdentifier>
+      </NewsIdentifier>
+    </Identification>
+
+    <NewsManagement>
+      <NewsItemType FormalName="Release"/>
+      <FirstCreated>20260115T202421+0000</FirstCreated>
+      <ThisRevisionCreated>20260115T202421+0000</ThisRevisionCreated>
+      <Status FormalName="Usable"/>
+    </NewsManagement>
+
+    <NewsComponent>
+      <BasisForChoice Rank="1">./NewsComponent/Role</BasisForChoice>
+
+      <NewsLines>
+        <HeadLine>Fundamentals Wire — HTTPS Push Test Delivery</HeadLine>
+        <DateLine>NEW YORK--(FUNDAMENTALS WIRE)--2026-01-15</DateLine>
+        <SlugLine>HTTPS Push Test</SlugLine>
+      </NewsLines>
+
+      <DescriptiveMetadata>
+        <Language FormalName="en"/>
+        <Genre FormalName="Release"/>
+      </DescriptiveMetadata>
+
+      <NewsComponent>
+        <Role FormalName="HeadLine"/>
+        <BasisForChoice Rank="1">./ContentItem/Format</BasisForChoice>
+        <DescriptiveMetadata><Language FormalName="en"/></DescriptiveMetadata>
+        <ContentItem Duid="8d8d5c97-24a1-4d21-a013-66cfd0809e12.headline">
+          <Format FormalName="XHTML"/>
+          <MimeType FormalName="text/xhtml"/>
+          <DataContent>&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;body&gt;&lt;p class="fwtextaligncenter"&gt;&lt;b&gt;Fundamentals Wire — HTTPS Push Test Delivery&lt;/b&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</DataContent>
+        </ContentItem>
+      </NewsComponent>
+
+      <NewsComponent>
+        <Role FormalName="Body"/>
+        <BasisForChoice Rank="1">./ContentItem/Format</BasisForChoice>
+        <DescriptiveMetadata><Language FormalName="en"/></DescriptiveMetadata>
+        <ContentItem Duid="8d8d5c97-24a1-4d21-a013-66cfd0809e12.body">
+          <Format FormalName="XHTML"/>
+          <MimeType FormalName="text/xhtml"/>
+          <DataContent>&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;This is a test delivery.&lt;/b&gt;&lt;/p&gt;&lt;p&gt;If you can read this, your endpoint accepted an HTTPS POST containing NewsML 1.2.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</DataContent>
+        </ContentItem>
+      </NewsComponent>
+
+      <NewsComponent>
+        <Role FormalName="StyleSheet"/>
+        <BasisForChoice Rank="1">./ContentItem/Format</BasisForChoice>
+        <DescriptiveMetadata><Language FormalName="en"/></DescriptiveMetadata>
+        <ContentItem Duid="8d8d5c97-24a1-4d21-a013-66cfd0809e12.stylesheet">
+          <Format FormalName="CSS"/>
+          <MimeType FormalName="text/css"/>
+          <DataContent>.fwtextaligncenter { text-align: center; }</DataContent>
+        </ContentItem>
+      </NewsComponent>
+    </NewsComponent>
+  </NewsItem>
+</NewsML></template>
+
+            <div class="fwCode" data-fw-code>
+              <div class="fwCodeTop">
+                <div class="fwCodeLeft">
+                  <div class="fwCodeTitle">XML</div>
+                  <div class="fwCodeMeta"><span>NewsML 1.2</span><span style="opacity:.35;">•</span><span>Test delivery</span></div>
+                </div>
+                <button class="fwCodeBtn" type="button" data-fw-copy>Copy</button>
+              </div>
+              <pre class="line-numbers"><code id="fwNewsmlCode" class="language-xml"></code></pre>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
 
-    <pre class="prettyCode"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;NewsML xmlns="http://iptc.org/std/NewsML/1.2/" Version="1.2"&gt;
-  &lt;Catalog Href="https://wire.fundamentals.so/schema/newsml/FundamentalsWireNewsMLCatalog.xml"/&gt;
+    <!-- Prism scripts -->
+    <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
 
-  &lt;NewsEnvelope&gt;
-    &lt;DateAndTime&gt;20260115T202421+0000&lt;/DateAndTime&gt;
+    <script>
+      (function () {
+        function copyText(text) {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            return navigator.clipboard.writeText(text);
+          }
+          var ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand("copy"); } catch (e) {}
+          document.body.removeChild(ta);
+          return Promise.resolve();
+        }
 
-    &lt;SentFrom&gt;
-      &lt;Party FormalName="Fundamentals Wire"&gt;
-        &lt;Property FormalName="ProviderProfile" Value="FundamentalsWireProfile"/&gt;
-        &lt;Property FormalName="ProviderProfileVersion" Value="1.0"/&gt;
-      &lt;/Party&gt;
-    &lt;/SentFrom&gt;
+        function initNewsmlBlock() {
+          var tpl = document.getElementById("fwNewsmlRaw");
+          var out = document.getElementById("fwNewsmlCode");
+          if (!tpl || !out) return;
 
-    &lt;NewsService FormalName="Fundamentals Wire"/&gt;
-    &lt;NewsProduct FormalName="PressRelease"/&gt;
-  &lt;/NewsEnvelope&gt;
+          // template.textContent gives us the raw XML string safely.
+          var raw = (tpl.textContent || "").trim();
+          out.textContent = raw;
 
-  &lt;NewsItem&gt;
-    &lt;Identification&gt;
-      &lt;NewsIdentifier&gt;
-        &lt;ProviderId&gt;wire.fundamentals.so&lt;/ProviderId&gt;
-        &lt;DateId&gt;20260115&lt;/DateId&gt;
-        &lt;NewsItemId&gt;8d8d5c97-24a1-4d21-a013-66cfd0809e12&lt;/NewsItemId&gt;
-        &lt;RevisionId PreviousRevision="0" Update="N"&gt;1&lt;/RevisionId&gt;
-        &lt;PublicIdentifier&gt;urn:newsml:wire.fundamentals.so:20260115:8d8d5c97-24a1-4d21-a013-66cfd0809e12:1&lt;/PublicIdentifier&gt;
-      &lt;/NewsIdentifier&gt;
-    &lt;/Identification&gt;
+          // If Prism is loaded, highlight after we inject.
+          if (window.Prism && Prism.highlightElement) {
+            Prism.highlightElement(out);
+          }
+        }
 
-    &lt;NewsManagement&gt;
-      &lt;NewsItemType FormalName="Release"/&gt;
-      &lt;FirstCreated&gt;20260115T202421+0000&lt;/FirstCreated&gt;
-      &lt;ThisRevisionCreated&gt;20260115T202421+0000&lt;/ThisRevisionCreated&gt;
-      &lt;Status FormalName="Usable"/&gt;
-    &lt;/NewsManagement&gt;
+        document.addEventListener("click", function (e) {
+          var btn = e.target.closest("[data-fw-copy]");
+          if (!btn) return;
 
-    &lt;NewsComponent&gt;
-      &lt;BasisForChoice Rank="1"&gt;./NewsComponent/Role&lt;/BasisForChoice&gt;
+          var wrap = btn.closest("[data-fw-code]");
+          if (!wrap) return;
 
-      &lt;NewsLines&gt;
-        &lt;HeadLine&gt;Fundamentals Wire — HTTPS Push Test Delivery&lt;/HeadLine&gt;
-        &lt;DateLine&gt;NEW YORK--(FUNDAMENTALS WIRE)--2026-01-15&lt;/DateLine&gt;
-        &lt;SlugLine&gt;HTTPS Push Test&lt;/SlugLine&gt;
-      &lt;/NewsLines&gt;
+          var code = wrap.querySelector("pre code");
+          if (!code) return;
 
-      &lt;DescriptiveMetadata&gt;
-        &lt;Language FormalName="en"/&gt;
-        &lt;Genre FormalName="Release"/&gt;
-      &lt;/DescriptiveMetadata&gt;
+          var text = code.textContent || "";
+          copyText(text).then(function () {
+            var old = btn.textContent;
+            btn.textContent = "Copied";
+            setTimeout(function () { btn.textContent = old; }, 900);
+          });
+        });
 
-      &lt;NewsComponent&gt;
-        &lt;Role FormalName="HeadLine"/&gt;
-        &lt;BasisForChoice Rank="1"&gt;./ContentItem/Format&lt;/BasisForChoice&gt;
-        &lt;DescriptiveMetadata&gt;&lt;Language FormalName="en"/&gt;&lt;/DescriptiveMetadata&gt;
-        &lt;ContentItem Duid="8d8d5c97-24a1-4d21-a013-66cfd0809e12.headline"&gt;
-          &lt;Format FormalName="XHTML"/&gt;
-          &lt;MimeType FormalName="text/xhtml"/&gt;
-          &lt;DataContent&gt;&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;head&gt;&lt;title&gt;&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;p class="fwtextaligncenter"&gt;&lt;b&gt;Fundamentals Wire — HTTPS Push Test Delivery&lt;/b&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;&lt;/DataContent&gt;
-        &lt;/ContentItem&gt;
-      &lt;/NewsComponent&gt;
-
-      &lt;NewsComponent&gt;
-        &lt;Role FormalName="Body"/&gt;
-        &lt;BasisForChoice Rank="1"&gt;./ContentItem/Format&lt;/BasisForChoice&gt;
-        &lt;DescriptiveMetadata&gt;&lt;Language FormalName="en"/&gt;&lt;/DescriptiveMetadata&gt;
-        &lt;ContentItem Duid="8d8d5c97-24a1-4d21-a013-66cfd0809e12.body"&gt;
-          &lt;Format FormalName="XHTML"/&gt;
-          &lt;MimeType FormalName="text/xhtml"/&gt;
-          &lt;DataContent&gt;&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;head&gt;&lt;title&gt;&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;This is a test delivery.&lt;/b&gt;&lt;/p&gt;
-&lt;p&gt;If you can read this, your endpoint accepted an HTTPS POST containing NewsML 1.2.&lt;/p&gt;
-&lt;p&gt;newsItemId: &lt;code&gt;8d8d5c97-24a1-4d21-a013-66cfd0809e12&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;created: &lt;code&gt;2026-01-15T20:24:21.113Z&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;handler: &lt;code&gt;integrator-request@2026-01-15T04:30Z&lt;/code&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;&lt;/DataContent&gt;
-        &lt;/ContentItem&gt;
-      &lt;/NewsComponent&gt;
-
-      &lt;NewsComponent&gt;
-        &lt;Role FormalName="StyleSheet"/&gt;
-        &lt;BasisForChoice Rank="1"&gt;./ContentItem/Format&lt;/BasisForChoice&gt;
-        &lt;DescriptiveMetadata&gt;&lt;Language FormalName="en"/&gt;&lt;/DescriptiveMetadata&gt;
-        &lt;ContentItem Duid="8d8d5c97-24a1-4d21-a013-66cfd0809e12.stylesheet"&gt;
-          &lt;Format FormalName="CSS"/&gt;
-          &lt;MimeType FormalName="text/css"/&gt;
-          &lt;DataContent&gt;.fwtextaligncenter { text-align: center; }&lt;/DataContent&gt;
-        &lt;/ContentItem&gt;
-      &lt;/NewsComponent&gt;
-
-    &lt;/NewsComponent&gt;
-  &lt;/NewsItem&gt;
-&lt;/NewsML&gt;</code></pre>
-  </div>
-</div>
-
-<!-- Paste this script once (ideally near </body>) to power the Copy buttons -->
-<script>
-  (function () {
-    function copyText(text) {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        return navigator.clipboard.writeText(text);
-      }
-      var ta = document.createElement("textarea");
-      ta.value = text;
-      ta.style.position = "fixed";
-      ta.style.left = "-9999px";
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand("copy"); } catch (e) {}
-      document.body.removeChild(ta);
-      return Promise.resolve();
-    }
-
-    document.addEventListener("click", function (e) {
-      var btn = e.target.closest("[data-copy-pre]");
-      if (!btn) return;
-
-      var block = btn.closest("[data-codeblock]");
-      if (!block) return;
-
-      var pre = block.querySelector("pre");
-      if (!pre) return;
-
-      var text = pre.textContent || "";
-      copyText(text).then(function () {
-        var old = btn.textContent;
-        btn.textContent = "Copied";
-        setTimeout(function () { btn.textContent = old; }, 900);
-      });
-    });
-  })();
-</script>
+        // Run after DOM is ready; Prism may load after (defer),
+        // so also retry once on window load.
+        document.addEventListener("DOMContentLoaded", initNewsmlBlock);
+        window.addEventListener("load", initNewsmlBlock);
+      })();
+    </script>
+  </body>
+</html>
