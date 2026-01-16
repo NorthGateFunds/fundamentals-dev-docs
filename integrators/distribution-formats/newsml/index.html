@@ -1,356 +1,364 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- DEPLOY_MARK:2026-01-15T18:53:08.532Z -->
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="fw-base" content="https://fundamentals-dev-docs.vercel.app" />
-    <title>NewsML (HTTPS Push) • Fundamentals Wire Developer Docs</title>
+  <!-- DEPLOY_MARK:2026-01-15T18:53:08.532Z -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <link rel="stylesheet" href="/assets/styles.css" />
-    <script defer src="/assets/integrator-accordion.js?v=20260115-0825"></script>
+  <!-- If you deploy docs on a different base than origin, set it here -->
+  <meta name="fw-base" content="https://fundamentals-dev-docs.vercel.app" />
 
-    <meta
-      name="description"
-      content="Integrate with Fundamentals Wire via HTTPS Push. Receive full NewsML 1.2 press releases as immutable XML payloads with stable identifiers and predictable delivery semantics."
-    />
+  <title>NewsML (HTTPS Push) • Fundamentals Wire Developer Docs</title>
 
-    <!-- Page-scoped styles ONLY for the accordions + forms + code blocks -->
-    <style>
-      .inlineFormWrap { margin-top: 12px; }
+  <meta
+    name="description"
+    content="Integrate with Fundamentals Wire via HTTPS Push. Receive full NewsML 1.2 press releases as immutable XML payloads with stable identifiers and predictable delivery semantics."
+  />
 
-      /* HARD HIDE until opened */
-      .formPanel[aria-hidden="true"] { display: none; }
+  <link rel="stylesheet" href="/assets/styles.css" />
 
-      .formPanel {
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        background: #fff;
-        overflow: hidden;
-        box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
-        margin-top: 12px;
-      }
+  <!-- IMPORTANT: app.js powers the mobile sidebar + scrim + nav toggle -->
+  <script defer src="/assets/app.js"></script>
 
-      .formPanelHeader {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 14px 14px;
-        border-bottom: 1px solid var(--border2);
-      }
+  <!-- NewsML page behavior (accordions/forms). Loaded after app.js -->
+  <script defer src="/assets/integrator-accordion.js?v=20260115-0825"></script>
 
-      .formPanelTitle {
-        font-weight: 900;
-        letter-spacing: -0.015em;
-        line-height: 1.2;
-        margin: 0;
-        font-size: 14px;
-        color: var(--text);
-      }
+  <!-- Page-scoped styles ONLY for the accordions + forms + code blocks -->
+  <style>
+    .inlineFormWrap { margin-top: 12px; }
 
-      .formPanelSub {
-        margin: 6px 0 0;
-        color: var(--muted);
-        font-size: 13px;
-        line-height: 1.55;
-        max-width: 760px;
-      }
+    /* HARD HIDE until opened */
+    .formPanel[aria-hidden="true"] { display: none; }
 
-      .formCloseBtn {
-        border: 1px solid var(--border);
-        background: #fff;
-        color: var(--text);
-        border-radius: 12px;
-        height: 34px;
-        padding: 0 10px;
-        cursor: pointer;
-        font-weight: 800;
-        font-size: 13px;
-        white-space: nowrap;
-      }
-      .formCloseBtn:hover { background: rgba(15, 23, 42, 0.03); }
+    .formPanel {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      overflow: hidden;
+      box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+      margin-top: 12px;
+    }
 
-      .formPanelBody { padding: 14px; }
+    .formPanelHeader {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 14px;
+      border-bottom: 1px solid var(--border2);
+    }
 
-      /* Form controls */
-      .fgrid {
-        display: grid;
-        grid-template-columns: repeat(12, minmax(0, 1fr));
-        gap: 10px;
-      }
-      .fcol-12 { grid-column: span 12; }
-      .fcol-6 { grid-column: span 6; }
-      .fcol-4 { grid-column: span 4; }
-      .fcol-8 { grid-column: span 8; }
-      @media (max-width: 820px) {
-        .fcol-6, .fcol-4, .fcol-8 { grid-column: span 12; }
-      }
+    .formPanelTitle {
+      font-weight: 900;
+      letter-spacing: -0.015em;
+      line-height: 1.2;
+      margin: 0;
+      font-size: 14px;
+      color: var(--text);
+    }
 
-      .flabel {
-        display: block;
-        font-size: 12px;
-        font-weight: 850;
-        color: rgba(11, 18, 32, 0.82);
-        letter-spacing: -0.005em;
-        margin: 0 0 6px;
-      }
+    .formPanelSub {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+      max-width: 760px;
+    }
 
-      .fhelp {
-        margin: 6px 0 0;
-        font-size: 12px;
-        color: var(--muted);
-        line-height: 1.45;
-      }
+    .formCloseBtn {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 12px;
+      height: 34px;
+      padding: 0 10px;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .formCloseBtn:hover { background: rgba(15, 23, 42, 0.03); }
 
-      .finput, .fselect, .ftextarea {
-        width: 100%;
-        max-width: 100%;
-        border: 1px solid rgba(15, 23, 42, 0.14);
-        border-radius: 12px;
-        padding: 10px 11px;
-        font-size: 14px;
-        outline: none;
-        background: #fff;
-        color: var(--text);
-      }
+    .formPanelBody { padding: 14px; }
 
-      .ftextarea {
-        min-height: 92px;
-        resize: vertical;
-        line-height: 1.5;
-      }
+    /* Form controls */
+    .fgrid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .fcol-12 { grid-column: span 12; }
+    .fcol-6 { grid-column: span 6; }
+    .fcol-4 { grid-column: span 4; }
+    .fcol-8 { grid-column: span 8; }
+    @media (max-width: 820px) {
+      .fcol-6, .fcol-4, .fcol-8 { grid-column: span 12; }
+    }
 
-      .finput:focus, .fselect:focus, .ftextarea:focus {
-        border-color: rgba(10, 102, 194, 0.35);
-        box-shadow: 0 0 0 4px rgba(10, 102, 194, 0.10);
-      }
+    .flabel {
+      display: block;
+      font-size: 12px;
+      font-weight: 850;
+      color: rgba(11, 18, 32, 0.82);
+      letter-spacing: -0.005em;
+      margin: 0 0 6px;
+    }
 
-      .frow {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: flex-end;
-        margin-top: 12px;
-        border-top: 1px solid var(--border2);
-        padding-top: 12px;
-      }
+    .fhelp {
+      margin: 6px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
 
-      .fstatus {
-        margin-top: 10px;
-        font-size: 12.5px;
-        color: var(--muted);
-        line-height: 1.5;
-      }
-      .fstatus strong { color: var(--text); }
+    .finput, .fselect, .ftextarea {
+      width: 100%;
+      max-width: 100%;
+      border: 1px solid rgba(15, 23, 42, 0.14);
+      border-radius: 12px;
+      padding: 10px 11px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+      color: var(--text);
+    }
 
-      /* Subtle callout */
-      .fwAllowlist {
-        border: 1px solid rgba(15,23,42,0.10);
-        background: rgba(15,23,42,0.02);
-        border-radius: 12px;
-        padding: 12px;
-        margin: 10px 0 12px;
-        color: var(--text);
-        font-size: 13px;
-        line-height: 1.5;
-      }
+    .ftextarea {
+      min-height: 92px;
+      resize: vertical;
+      line-height: 1.5;
+    }
 
-      .fwAllowlistHead { font-weight: 850; margin-bottom: 6px; }
+    .finput:focus, .fselect:focus, .ftextarea:focus {
+      border-color: rgba(10, 102, 194, 0.35);
+      box-shadow: 0 0 0 4px rgba(10, 102, 194, 0.10);
+    }
 
-      .fwPill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(15,23,42,0.12);
-        background: rgba(15,23,42,0.03);
-        font-size: 12px;
-        font-weight: 800;
-        color: rgba(11,18,32,0.88);
-        white-space: nowrap;
-      }
+    .frow {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      margin-top: 12px;
+      border-top: 1px solid var(--border2);
+      padding-top: 12px;
+    }
 
-      .btnGhost {
-        border: 1px solid var(--border);
-        background: #fff;
-        color: var(--text);
-        border-radius: 12px;
-        height: 34px;
-        padding: 0 12px;
-        cursor: pointer;
-        font-weight: 800;
-        font-size: 13px;
-      }
-      .btnGhost:hover { background: rgba(15, 23, 42, 0.03); }
+    .fstatus {
+      margin-top: 10px;
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .fstatus strong { color: var(--text); }
 
-      /* Improve primary button (less “ugly”, more product-y) */
-      .btnPrimary {
-        border: 1px solid rgba(10, 102, 194, 0.28);
-        background: rgba(10, 102, 194, 0.92);
-        color: #fff;
-        border-radius: 12px;
-        height: 38px;
-        padding: 0 14px;
-        cursor: pointer;
-        font-weight: 950;
-        font-size: 13px;
-        letter-spacing: -0.01em;
-        box-shadow:
-          0 1px 0 rgba(15, 23, 42, 0.05),
-          0 8px 18px rgba(10, 102, 194, 0.12);
-      }
-      .btnPrimary:hover { filter: brightness(1.02); }
-      .btnPrimary:active { transform: translateY(0.5px); }
-      .btnPrimary:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+    /* Subtle callout */
+    .fwAllowlist {
+      border: 1px solid rgba(15,23,42,0.10);
+      background: rgba(15,23,42,0.02);
+      border-radius: 12px;
+      padding: 12px;
+      margin: 10px 0 12px;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.5;
+    }
 
-      /* Badge inside step headers */
-      .fwStepTop {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 10px;
-      }
+    .fwAllowlistHead { font-weight: 850; margin-bottom: 6px; }
 
-      .fwStepH {
-        margin: 0;
-        font-size: 14px;
-        font-weight: 950;
-        letter-spacing: -0.01em;
-        color: var(--text);
-        line-height: 1.2;
-      }
+    .fwPill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(15,23,42,0.12);
+      background: rgba(15,23,42,0.03);
+      font-size: 12px;
+      font-weight: 800;
+      color: rgba(11,18,32,0.88);
+      white-space: nowrap;
+    }
 
-      .fwStepP {
-        margin: 6px 0 0;
-        color: var(--muted);
-        font-size: 13px;
-        line-height: 1.5;
-        max-width: 52ch;
-      }
+    .btnGhost {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 12px;
+      height: 34px;
+      padding: 0 12px;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 13px;
+    }
+    .btnGhost:hover { background: rgba(15, 23, 42, 0.03); }
 
-      .fwBadge {
-        display: inline-flex;
-        align-items: center;
-        border: 1px solid rgba(15, 23, 42, 0.12);
-        background: rgba(15, 23, 42, 0.03);
-        border-radius: 999px;
-        padding: 6px 10px;
-        font-size: 12px;
-        font-weight: 900;
-        color: rgba(11, 18, 32, 0.88);
-        white-space: nowrap;
-      }
+    /* Improve primary button (less “ugly”, more product-y) */
+    .btnPrimary {
+      border: 1px solid rgba(10, 102, 194, 0.28);
+      background: rgba(10, 102, 194, 0.92);
+      color: #fff;
+      border-radius: 12px;
+      height: 38px;
+      padding: 0 14px;
+      cursor: pointer;
+      font-weight: 950;
+      font-size: 13px;
+      letter-spacing: -0.01em;
+      box-shadow:
+        0 1px 0 rgba(15, 23, 42, 0.05),
+        0 8px 18px rgba(10, 102, 194, 0.12);
+    }
+    .btnPrimary:hover { filter: brightness(1.02); }
+    .btnPrimary:active { transform: translateY(0.5px); }
+    .btnPrimary:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
 
-      .fwLockNote {
-        border: 1px dashed rgba(15, 23, 42, 0.18);
-        background: rgba(15, 23, 42, 0.02);
-        border-radius: 12px;
-        padding: 10px 11px;
-        margin: 10px 0 12px;
-        color: rgba(11, 18, 32, 0.82);
-        font-size: 12.5px;
-        line-height: 1.5;
-      }
+    /* Badge inside step headers */
+    .fwStepTop {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
 
-      /* --- Pretty code blocks (docs-grade) --- */
-      .codeBlock{
-        border:1px solid rgba(15,23,42,.12);
-        border-radius:16px;
-        overflow:hidden;
-        background:#fff;
-        box-shadow:0 1px 0 rgba(15,23,42,.03);
-      }
+    .fwStepH {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 950;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      line-height: 1.2;
+    }
 
-      .codeBlockTop{
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:12px;
-        padding:10px 12px;
-        border-bottom:1px solid rgba(15,23,42,.10);
-        background:linear-gradient(to bottom, rgba(248,250,252,.9), rgba(248,250,252,.6));
-      }
+    .fwStepP {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      max-width: 52ch;
+    }
 
-      .codeBlockTitle{
-        font-size:12px;
-        font-weight:950;
-        letter-spacing:-0.01em;
-        color:rgba(11,18,32,.78);
-        text-transform:uppercase;
-      }
+    .fwBadge {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      background: rgba(15, 23, 42, 0.03);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 900;
+      color: rgba(11, 18, 32, 0.88);
+      white-space: nowrap;
+    }
 
-      .codeBlockMeta{
-        display:inline-flex;
-        align-items:center;
-        gap:10px;
-        font-size:12px;
-        font-weight:850;
-        color:rgba(11,18,32,.55);
-        white-space:nowrap;
-      }
+    .fwLockNote {
+      border: 1px dashed rgba(15, 23, 42, 0.18);
+      background: rgba(15, 23, 42, 0.02);
+      border-radius: 12px;
+      padding: 10px 11px;
+      margin: 10px 0 12px;
+      color: rgba(11, 18, 32, 0.82);
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
 
-      .codeCopyBtn{
-        border:1px solid rgba(15,23,42,.14);
-        background:#fff;
-        color:rgba(11,18,32,.86);
-        border-radius:999px;
-        height:30px;
-        padding:0 12px;
-        cursor:pointer;
-        font-weight:900;
-        font-size:12px;
-      }
-      .codeCopyBtn:hover{ background:rgba(15,23,42,.03); }
-      .codeCopyBtn:active{ transform:translateY(0.5px); }
+    /* --- Pretty code blocks (docs-grade) --- */
+    .codeBlock{
+      border:1px solid rgba(15,23,42,.12);
+      border-radius:16px;
+      overflow:hidden;
+      background:#fff;
+      box-shadow:0 1px 0 rgba(15,23,42,.03);
+    }
 
-      /* IMPORTANT: force real pre formatting */
-      .codeBlock pre,
-      .codeBlock pre.prettyCode,
-      .codeBlock pre.code{
-        margin:0;
-        padding:14px 14px 14px 16px;
-        background:rgba(15,23,42,.03);
-        border-top:1px solid rgba(255,255,255,.7);
-        overflow:auto;
-        max-height:520px;
+    .codeBlockTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 12px;
+      border-bottom:1px solid rgba(15,23,42,.10);
+      background:linear-gradient(to bottom, rgba(248,250,252,.9), rgba(248,250,252,.6));
+    }
 
-        white-space:pre !important;
-        word-break:normal !important;
-        overflow-wrap:normal !important;
+    .codeBlockTitle{
+      font-size:12px;
+      font-weight:950;
+      letter-spacing:-0.01em;
+      color:rgba(11,18,32,.78);
+      text-transform:uppercase;
+    }
 
-        font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        font-size:12.5px;
-        line-height:1.7;
-        color:rgba(11,18,32,.92);
-        tab-size:2;
-      }
+    .codeBlockMeta{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      font-size:12px;
+      font-weight:850;
+      color:rgba(11,18,32,.55);
+      white-space:nowrap;
+    }
 
-      .codeBlock code{
-        white-space:inherit !important;
-        word-break:inherit !important;
-        overflow-wrap:inherit !important;
-        display:block; /* prevents “invisible code” when global CSS sets inline/hidden */
-      }
+    .codeCopyBtn{
+      border:1px solid rgba(15,23,42,.14);
+      background:#fff;
+      color:rgba(11,18,32,.86);
+      border-radius:999px;
+      height:30px;
+      padding:0 12px;
+      cursor:pointer;
+      font-weight:900;
+      font-size:12px;
+    }
+    .codeCopyBtn:hover{ background:rgba(15,23,42,.03); }
+    .codeCopyBtn:active{ transform:translateY(0.5px); }
 
-      .codeBlock pre::-webkit-scrollbar{ height:10px; width:10px; }
-      .codeBlock pre::-webkit-scrollbar-thumb{
-        background:rgba(15,23,42,.18);
-        border-radius:999px;
-      }
-      .codeBlock pre::-webkit-scrollbar-track{ background:rgba(15,23,42,.04); }
+    /* IMPORTANT: force real pre formatting */
+    .codeBlock pre,
+    .codeBlock pre.prettyCode,
+    .codeBlock pre.code{
+      margin:0;
+      padding:14px 14px 14px 16px;
+      background:rgba(15,23,42,.03);
+      border-top:1px solid rgba(255,255,255,.7);
+      overflow:auto;
+      max-height:520px;
 
-      /* Ensure nothing clips the example blocks */
-      .card { overflow: visible; }
+      white-space:pre !important;
+      word-break:normal !important;
+      overflow-wrap:normal !important;
 
-      /* Optional breathing room between the two example cards */
-      #examples + p + .card { margin-top:14px; }
-      #examples + p + .card + .card { margin-top:14px; }
-    </style>
-  </head>
+      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12.5px;
+      line-height:1.7;
+      color:rgba(11,18,32,.92);
+      tab-size:2;
+    }
+
+    .codeBlock code{
+      white-space:inherit !important;
+      word-break:inherit !important;
+      overflow-wrap:inherit !important;
+      display:block;
+    }
+
+    .codeBlock pre::-webkit-scrollbar{ height:10px; width:10px; }
+    .codeBlock pre::-webkit-scrollbar-thumb{
+      background:rgba(15,23,42,.18);
+      border-radius:999px;
+    }
+    .codeBlock pre::-webkit-scrollbar-track{ background:rgba(15,23,42,.04); }
+
+    /* NOTE: removed the global `.card { overflow: visible; }` override.
+       That one can break layout/nav on mobile. If you need overflow changes,
+       scope them to the examples section only. */
+
+    #examples + p + .card { margin-top:14px; }
+    #examples + p + .card + .card { margin-top:14px; }
+  </style>
+</head>
 
   <body>
     <div class="topbar">
