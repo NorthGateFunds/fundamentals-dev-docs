@@ -807,27 +807,43 @@
           </div>
 
           <!-- EXAMPLES -->
-          <h2 id="examples">Examples</h2>
-          <p>
-            These examples are intentionally minimal. The goal is to show “what hits your endpoint” and where the canonical values live.
-            You can accept the full payload as-is and store it verbatim alongside parsed fields.
-          </p>
+<h2 id="examples">Examples</h2>
+<p>
+  These examples are intentionally minimal. The goal is to show what hits your endpoint and where the canonical values live.
+  You can accept the full payload as-is and store it verbatim alongside parsed fields.
+</p>
 
-          <div class="card">
-            <h3 style="margin-top:0;">Example HTTP request</h3>
+<!-- Example 1: HTTP request -->
+<section class="card">
+  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+    <div>
+      <h3 style="margin:0;">Example HTTP request</h3>
+      <div style="margin-top:6px; color:var(--muted); font-size:13px; line-height:1.5;">
+        Your endpoint receives a single <strong>HTTPS POST</strong> with <strong>NewsML 1.2</strong> as the body.
+      </div>
+    </div>
+    <div class="fwBadge" style="margin-top:2px;">Inbound</div>
+  </div>
 
-            <div class="codeBlock" data-codeblock>
-              <div class="codeBlockTop">
-                <div class="codeBlockTitle">HTTP</div>
-                <div class="codeBlockMeta">
-                  <span>POST</span>
-                  <span style="opacity:.45;">•</span>
-                  <span>application/xml</span>
-                </div>
-                <button class="codeCopyBtn" type="button" data-copy-pre>Copy</button>
-              </div>
+  <div style="height:12px;"></div>
 
-              <pre class="prettyCode"><code>POST /webhooks/fundamentals-wire/newsml HTTP/1.1
+  <div class="codeBlock" data-codeblock>
+    <div class="codeBlockTop">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="codeBlockTitle">HTTP</div>
+        <div class="codeBlockMeta">
+          <span>POST</span>
+          <span style="opacity:.45;">•</span>
+          <span>application/xml</span>
+        </div>
+      </div>
+
+      <button class="codeCopyBtn" type="button" data-copy-pre aria-label="Copy HTTP request">
+        Copy
+      </button>
+    </div>
+
+    <pre class="prettyCode"><code>POST /webhooks/fundamentals-wire/newsml HTTP/1.1
 Host: example.com
 Content-Type: application/xml; charset=utf-8
 User-Agent: FundamentalsWire/1.0
@@ -838,24 +854,44 @@ X-FW-Signature: t=1700000000,v1=...
 &lt;NewsML xmlns="http://iptc.org/std/NewsML/1.2/" Version="1.2"&gt;
   ...
 &lt;/NewsML&gt;</code></pre>
-            </div>
-          </div>
+  </div>
 
-          <div class="card">
-            <h3 style="margin-top:0;">Example NewsML payload (test delivery)</h3>
+  <div style="margin-top:10px; color:var(--muted); font-size:12.5px; line-height:1.5;">
+    Return <code>204</code> (or any <code>2xx</code>) quickly, then process asynchronously.
+  </div>
+</section>
 
-            <div class="codeBlock" data-codeblock>
-              <div class="codeBlockTop">
-                <div class="codeBlockTitle">NewsML 1.2 XML</div>
-                <div class="codeBlockMeta">
-                  <span>UTF-8</span>
-                  <span style="opacity:.45;">•</span>
-                  <span>Test delivery</span>
-                </div>
-                <button class="codeCopyBtn" type="button" data-copy-pre>Copy</button>
-              </div>
+<!-- Example 2: Full NewsML payload -->
+<section class="card">
+  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+    <div>
+      <h3 style="margin:0;">Example NewsML payload (test delivery)</h3>
+      <div style="margin-top:6px; color:var(--muted); font-size:13px; line-height:1.5;">
+        This is the same shape as production deliveries—just generated for the test step.
+      </div>
+    </div>
+    <div class="fwBadge" style="margin-top:2px;">NewsML 1.2</div>
+  </div>
 
-              <pre class="prettyCode"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+  <div style="height:12px;"></div>
+
+  <div class="codeBlock" data-codeblock>
+    <div class="codeBlockTop">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="codeBlockTitle">XML</div>
+        <div class="codeBlockMeta">
+          <span>UTF-8</span>
+          <span style="opacity:.45;">•</span>
+          <span>Test delivery</span>
+        </div>
+      </div>
+
+      <button class="codeCopyBtn" type="button" data-copy-pre aria-label="Copy NewsML payload">
+        Copy
+      </button>
+    </div>
+
+    <pre class="prettyCode"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;NewsML xmlns="http://iptc.org/std/NewsML/1.2/" Version="1.2"&gt;
   &lt;Catalog Href="https://wire.fundamentals.so/schema/newsml/FundamentalsWireNewsMLCatalog.xml"/&gt;
 
@@ -945,52 +981,13 @@ X-FW-Signature: t=1700000000,v1=...
     &lt;/NewsComponent&gt;
   &lt;/NewsItem&gt;
 &lt;/NewsML&gt;</code></pre>
-            </div>
-          </div>
+  </div>
 
-          <div class="footerNote">
-            Fundamentals Wire NewsML profile: NewsML 1.2, press-release oriented, immutable per publish event.
-          </div>
-        </div>
-      </main>
-    </div>
+  <div style="margin-top:10px; color:var(--muted); font-size:12.5px; line-height:1.5;">
+    Best practice: store the raw XML (verbatim) plus parsed fields keyed by <code>&lt;NewsItemId&gt;</code>.
+  </div>
+</section>
 
-    <!-- Copy buttons for code blocks -->
-    <script>
-      (function () {
-        function copyText(text) {
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            return navigator.clipboard.writeText(text);
-          }
-          var ta = document.createElement("textarea");
-          ta.value = text;
-          ta.style.position = "fixed";
-          ta.style.left = "-9999px";
-          document.body.appendChild(ta);
-          ta.select();
-          try { document.execCommand("copy"); } catch (e) {}
-          document.body.removeChild(ta);
-          return Promise.resolve();
-        }
-
-        document.addEventListener("click", function (e) {
-          var btn = e.target.closest("[data-copy-pre]");
-          if (!btn) return;
-
-          var block = btn.closest("[data-codeblock]");
-          if (!block) return;
-
-          var pre = block.querySelector("pre");
-          if (!pre) return;
-
-          var text = pre.textContent || "";
-          copyText(text).then(function () {
-            var old = btn.textContent;
-            btn.textContent = "Copied";
-            setTimeout(function () { btn.textContent = old; }, 900);
-          });
-        });
-      })();
-    </script>
-  </body>
-</html>
+<div class="footerNote">
+  Fundamentals Wire NewsML profile: NewsML 1.2, press-release oriented, immutable per publish event.
+</div>
