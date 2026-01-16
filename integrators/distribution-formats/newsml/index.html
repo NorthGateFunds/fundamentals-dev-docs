@@ -15,17 +15,7 @@
       content="Integrate with Fundamentals Wire via HTTPS Push. Receive full NewsML 1.2 press releases as immutable XML payloads with stable identifiers and predictable delivery semantics."
     />
 
-    <!-- Prism (syntax highlighting + line numbers) -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.css"
-    />
-
-    <!-- Page-scoped styles ONLY for the accordions + forms + code examples -->
+    <!-- Page-scoped styles ONLY for the accordions + forms + code blocks -->
     <style>
       .inlineFormWrap { margin-top: 12px; }
 
@@ -196,18 +186,25 @@
       }
       .btnGhost:hover { background: rgba(15, 23, 42, 0.03); }
 
+      /* Improve primary button (less “ugly”, more product-y) */
       .btnPrimary {
-        border: 1px solid rgba(10, 102, 194, 0.30);
+        border: 1px solid rgba(10, 102, 194, 0.28);
         background: rgba(10, 102, 194, 0.92);
         color: #fff;
         border-radius: 12px;
-        height: 34px;
-        padding: 0 12px;
+        height: 38px;
+        padding: 0 14px;
         cursor: pointer;
-        font-weight: 900;
+        font-weight: 950;
         font-size: 13px;
+        letter-spacing: -0.01em;
+        box-shadow:
+          0 1px 0 rgba(15, 23, 42, 0.05),
+          0 8px 18px rgba(10, 102, 194, 0.12);
       }
-      .btnPrimary:disabled { opacity: 0.55; cursor: not-allowed; }
+      .btnPrimary:hover { filter: brightness(1.02); }
+      .btnPrimary:active { transform: translateY(0.5px); }
+      .btnPrimary:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
 
       /* Badge inside step headers */
       .fwStepTop {
@@ -248,7 +245,18 @@
         white-space: nowrap;
       }
 
-      /* --- Your previous “pretty code blocks” (kept) --- */
+      .fwLockNote {
+        border: 1px dashed rgba(15, 23, 42, 0.18);
+        background: rgba(15, 23, 42, 0.02);
+        border-radius: 12px;
+        padding: 10px 11px;
+        margin: 10px 0 12px;
+        color: rgba(11, 18, 32, 0.82);
+        font-size: 12.5px;
+        line-height: 1.5;
+      }
+
+      /* --- Pretty code blocks (docs-grade) --- */
       .codeBlock{
         border:1px solid rgba(15,23,42,.12);
         border-radius:16px;
@@ -256,6 +264,7 @@
         background:#fff;
         box-shadow:0 1px 0 rgba(15,23,42,.03);
       }
+
       .codeBlockTop{
         display:flex;
         align-items:center;
@@ -265,6 +274,7 @@
         border-bottom:1px solid rgba(15,23,42,.10);
         background:linear-gradient(to bottom, rgba(248,250,252,.9), rgba(248,250,252,.6));
       }
+
       .codeBlockTitle{
         font-size:12px;
         font-weight:950;
@@ -272,6 +282,7 @@
         color:rgba(11,18,32,.78);
         text-transform:uppercase;
       }
+
       .codeBlockMeta{
         display:inline-flex;
         align-items:center;
@@ -281,6 +292,7 @@
         color:rgba(11,18,32,.55);
         white-space:nowrap;
       }
+
       .codeCopyBtn{
         border:1px solid rgba(15,23,42,.14);
         background:#fff;
@@ -295,6 +307,7 @@
       .codeCopyBtn:hover{ background:rgba(15,23,42,.03); }
       .codeCopyBtn:active{ transform:translateY(0.5px); }
 
+      /* IMPORTANT: force real pre formatting */
       .codeBlock pre,
       .codeBlock pre.prettyCode,
       .codeBlock pre.code{
@@ -304,20 +317,25 @@
         border-top:1px solid rgba(255,255,255,.7);
         overflow:auto;
         max-height:520px;
+
         white-space:pre !important;
         word-break:normal !important;
         overflow-wrap:normal !important;
+
         font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         font-size:12.5px;
         line-height:1.7;
         color:rgba(11,18,32,.92);
         tab-size:2;
       }
+
       .codeBlock code{
         white-space:inherit !important;
         word-break:inherit !important;
         overflow-wrap:inherit !important;
+        display:block; /* prevents “invisible code” when global CSS sets inline/hidden */
       }
+
       .codeBlock pre::-webkit-scrollbar{ height:10px; width:10px; }
       .codeBlock pre::-webkit-scrollbar-thumb{
         background:rgba(15,23,42,.18);
@@ -325,115 +343,12 @@
       }
       .codeBlock pre::-webkit-scrollbar-track{ background:rgba(15,23,42,.04); }
 
-      #examples + p + .card{ margin-top:14px; }
-      #examples + p + .card + .card{ margin-top:14px; }
+      /* Ensure nothing clips the example blocks */
+      .card { overflow: visible; }
 
-      pre.code,
-      pre.prettyCode {
-        margin: 0;
-        padding: 12px;
-        overflow: auto;
-        max-height: 520px;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        font-size: 12.5px;
-        line-height: 1.6;
-        color: rgba(11, 18, 32, 0.92);
-        white-space: pre;
-        tab-size: 2;
-      }
-      pre.code::selection,
-      pre.prettyCode::selection {
-        background: rgba(10, 102, 194, 0.20);
-      }
-
-      .fwLockNote {
-        border: 1px dashed rgba(15, 23, 42, 0.18);
-        background: rgba(15, 23, 42, 0.02);
-        border-radius: 12px;
-        padding: 10px 11px;
-        margin: 10px 0 12px;
-        color: rgba(11, 18, 32, 0.82);
-        font-size: 12.5px;
-        line-height: 1.5;
-      }
-
-      /* ===========================
-         NEW: Prism “knocks it out of the park” blocks
-         (Used ONLY in Examples)
-         =========================== */
-      .fwCode {
-        border: 1px solid rgba(15,23,42,.12);
-        border-radius: 16px;
-        overflow: hidden;
-        background: #0b1220;
-        box-shadow: 0 1px 0 rgba(15,23,42,.03);
-      }
-
-      .fwCodeTop {
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:12px;
-        padding:10px 12px;
-        border-bottom: 1px solid rgba(255,255,255,.10);
-        background: linear-gradient(to bottom, rgba(255,255,255,.07), rgba(255,255,255,.03));
-      }
-
-      .fwCodeLeft { display:flex; align-items:center; gap:10px; min-width:0; }
-      .fwCodeTitle {
-        font-size: 11px;
-        font-weight: 950;
-        letter-spacing: .09em;
-        text-transform: uppercase;
-        color: rgba(255,255,255,.78);
-        white-space: nowrap;
-      }
-      .fwCodeMeta {
-        display:inline-flex;
-        align-items:center;
-        gap:10px;
-        font-size: 12px;
-        font-weight: 800;
-        color: rgba(255,255,255,.55);
-        white-space: nowrap;
-      }
-
-      .fwCodeBtn {
-        border: 1px solid rgba(255,255,255,.16);
-        background: rgba(255,255,255,.06);
-        color: rgba(255,255,255,.90);
-        border-radius: 999px;
-        height: 30px;
-        padding: 0 12px;
-        cursor: pointer;
-        font-weight: 900;
-        font-size: 12px;
-      }
-      .fwCodeBtn:hover { background: rgba(255,255,255,.10); }
-      .fwCodeBtn:active { transform: translateY(0.5px); }
-
-      /* Force correct no-wrap and scrolling */
-      .fwCode pre[class*="language-"] {
-        margin:0 !important;
-        background: transparent !important;
-        overflow:auto !important;
-        max-height: 560px;
-        white-space: pre !important;
-        word-break: normal !important;
-        overflow-wrap: normal !important;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
-        font-size: 12.5px !important;
-        line-height: 1.75 !important;
-        tab-size: 2;
-      }
-
-      .fwCode pre.line-numbers { padding-left: 3.4em !important; }
-      .fwCode .line-numbers .line-numbers-rows { border-right: 1px solid rgba(255,255,255,.10) !important; }
-      .fwCode .line-numbers-rows > span:before { color: rgba(255,255,255,.28) !important; }
-
-      .fwCode pre::-webkit-scrollbar{ height:10px; width:10px; }
-      .fwCode pre::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.18); border-radius: 999px; }
-      .fwCode pre::-webkit-scrollbar-track{ background: rgba(255,255,255,.06); }
+      /* Optional breathing room between the two example cards */
+      #examples + p + .card { margin-top:14px; }
+      #examples + p + .card + .card { margin-top:14px; }
     </style>
   </head>
 
@@ -496,7 +411,6 @@
             </p>
 
             <div class="ctaList" style="margin-top:12px;">
-              <!-- Push access opens accordion -->
               <a
                 class="ctaRow ctaRowPrimary"
                 href="#"
@@ -534,9 +448,9 @@
               </a>
             </div>
 
-            <!-- Accordion area lives INSIDE this card -->
+            <!-- Accordion area -->
             <div class="inlineFormWrap">
-              <!-- PUSH ACCESS ACCORDION (WIZARD OPTION B) -->
+              <!-- PUSH ACCESS ACCORDION -->
               <div class="formPanel" id="pushAccessAccordion" aria-hidden="true">
                 <div class="formPanelHeader">
                   <div>
@@ -551,7 +465,6 @@
                 </div>
 
                 <div class="formPanelBody">
-                  <!-- Wizard grid (you added CSS already; this markup enables it) -->
                   <div class="fwWizardGrid" data-fw-wizard>
                     <!-- STEP 1 -->
                     <section class="fwStep fwStepTest" data-fw-step-view="1">
@@ -634,6 +547,7 @@
 
                           <div class="fcol-6">
                             <label class="flabel" for="fw_phone">Cell phone</label>
+                            <!-- REQUIRED NOW -->
                             <input class="finput" id="fw_phone" name="phone" type="tel" placeholder="+1 (555) 123-4567" required />
                             <div class="fhelp">Required — used only if your endpoint fails during a live release.</div>
                           </div>
@@ -726,29 +640,29 @@
           </div>
 
           <!-- CONTRACT -->
-          <h2>Delivery contract</h2>
+<h2>Delivery contract</h2>
 
-          <div class="card">
-            <div class="kv">
-              <div class="k">Method</div>
-              <div class="v"><code>POST</code></div>
+<div class="card">
+  <div class="kv">
+    <div class="k">Method</div>
+    <div class="v"><code>POST</code></div>
 
-              <div class="k">Content-Type</div>
-              <div class="v"><code>application/xml; charset=utf-8</code></div>
+    <div class="k">Content-Type</div>
+    <div class="v"><code>application/xml; charset=utf-8</code></div>
 
-              <div class="k">Body</div>
-              <div class="v">Full NewsML 1.2 XML (UTF-8)</div>
+    <div class="k">Body</div>
+    <div class="v">Full NewsML 1.2 XML (UTF-8)</div>
 
-              <div class="k">Trigger</div>
-              <div class="v">Publish event</div>
+    <div class="k">Trigger</div>
+    <div class="v">Publish event</div>
 
-              <div class="k">Ack</div>
-              <div class="v">Return <code>2xx</code> to acknowledge receipt</div>
+    <div class="k">Ack</div>
+    <div class="v">Return <code>2xx</code> to acknowledge receipt</div>
 
-              <div class="k">Retries</div>
-              <div class="v">Non-2xx responses or network failures may be retried. Your endpoint must be idempotent.</div>
-            </div>
-          </div>
+    <div class="k">Retries</div>
+    <div class="v">Non-2xx responses or network failures may be retried. Your endpoint must be idempotent.</div>
+  </div>
+</div>
 
           <!-- AUTH -->
           <h2>Authentication and integrity</h2>
@@ -870,11 +784,205 @@
           <!-- IDEMPOTENCY -->
           <h2>Idempotency and retries</h2>
           <p>
-            Your endpoint should be safe to receive duplicate deliveries. Retries can happen due to network failures, timeouts, or non-2xx responses.
-            Deduplicate on <code>NewsItemId</code> (and optionally <code>PublicIdentifier</code>) before writing downstream state.
+            Your endpoint should be safe to receive duplicate deliveries. Retries can happen due to network failures,
+            timeouts, or non-2xx responses. Deduplicate on <code>NewsItemId</code> (and optionally <code>PublicIdentifier</code>)
+            before writing downstream state.
           </p>
 
           <div class="card">
             <h3 style="margin-top:0;">Practical guidance</h3>
             <ul class="list" style="margin-bottom:0;">
-              <li>Return <code>2xx</code> once the payload is
+              <li>Return <code>2xx</code> once the payload is durably accepted (e.g., queued).</li>
+              <li>Make storage idempotent: ignore duplicates by primary key.</li>
+              <li>Log the publish timestamp (<code>FirstCreated</code>) for ordering and audit trails.</li>
+            </ul>
+          </div>
+
+          <!-- EXAMPLES -->
+          <h2 id="examples">Examples</h2>
+          <p>
+            These examples are intentionally minimal. The goal is to show “what hits your endpoint” and where the canonical values live.
+            You can accept the full payload as-is and store it verbatim alongside parsed fields.
+          </p>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Example HTTP request</h3>
+
+            <div class="codeBlock" data-codeblock>
+              <div class="codeBlockTop">
+                <div class="codeBlockTitle">HTTP</div>
+                <div class="codeBlockMeta">
+                  <span>POST</span>
+                  <span style="opacity:.45;">•</span>
+                  <span>application/xml</span>
+                </div>
+                <button class="codeCopyBtn" type="button" data-copy-pre>Copy</button>
+              </div>
+
+              <pre class="prettyCode"><code>POST /webhooks/fundamentals-wire/newsml HTTP/1.1
+Host: example.com
+Content-Type: application/xml; charset=utf-8
+User-Agent: FundamentalsWire/1.0
+X-FW-Delivery-Id: 74758d9a-99c8-4e5f-9f3f-2b7c2a0d5e11
+X-FW-Signature: t=1700000000,v1=...
+
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;NewsML xmlns="http://iptc.org/std/NewsML/1.2/" Version="1.2"&gt;
+  ...
+&lt;/NewsML&gt;</code></pre>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 style="margin-top:0;">Example NewsML payload (test delivery)</h3>
+
+            <div class="codeBlock" data-codeblock>
+              <div class="codeBlockTop">
+                <div class="codeBlockTitle">NewsML 1.2 XML</div>
+                <div class="codeBlockMeta">
+                  <span>UTF-8</span>
+                  <span style="opacity:.45;">•</span>
+                  <span>Test delivery</span>
+                </div>
+                <button class="codeCopyBtn" type="button" data-copy-pre>Copy</button>
+              </div>
+
+              <pre class="prettyCode"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;NewsML xmlns="http://iptc.org/std/NewsML/1.2/" Version="1.2"&gt;
+  &lt;Catalog Href="https://wire.fundamentals.so/schema/newsml/FundamentalsWireNewsMLCatalog.xml"/&gt;
+
+  &lt;NewsEnvelope&gt;
+    &lt;DateAndTime&gt;20260115T202421+0000&lt;/DateAndTime&gt;
+
+    &lt;SentFrom&gt;
+      &lt;Party FormalName="Fundamentals Wire"&gt;
+        &lt;Property FormalName="ProviderProfile" Value="FundamentalsWireProfile"/&gt;
+        &lt;Property FormalName="ProviderProfileVersion" Value="1.0"/&gt;
+      &lt;/Party&gt;
+    &lt;/SentFrom&gt;
+
+    &lt;NewsService FormalName="Fundamentals Wire"/&gt;
+    &lt;NewsProduct FormalName="PressRelease"/&gt;
+  &lt;/NewsEnvelope&gt;
+
+  &lt;NewsItem&gt;
+    &lt;Identification&gt;
+      &lt;NewsIdentifier&gt;
+        &lt;ProviderId&gt;wire.fundamentals.so&lt;/ProviderId&gt;
+        &lt;DateId&gt;20260115&lt;/DateId&gt;
+        &lt;NewsItemId&gt;8d8d5c97-24a1-4d21-a013-66cfd0809e12&lt;/NewsItemId&gt;
+        &lt;RevisionId PreviousRevision="0" Update="N"&gt;1&lt;/RevisionId&gt;
+        &lt;PublicIdentifier&gt;urn:newsml:wire.fundamentals.so:20260115:8d8d5c97-24a1-4d21-a013-66cfd0809e12:1&lt;/PublicIdentifier&gt;
+      &lt;/NewsIdentifier&gt;
+    &lt;/Identification&gt;
+
+    &lt;NewsManagement&gt;
+      &lt;NewsItemType FormalName="Release"/&gt;
+      &lt;FirstCreated&gt;20260115T202421+0000&lt;/FirstCreated&gt;
+      &lt;ThisRevisionCreated&gt;20260115T202421+0000&lt;/ThisRevisionCreated&gt;
+      &lt;Status FormalName="Usable"/&gt;
+    &lt;/NewsManagement&gt;
+
+    &lt;NewsComponent&gt;
+      &lt;BasisForChoice Rank="1"&gt;./NewsComponent/Role&lt;/BasisForChoice&gt;
+
+      &lt;NewsLines&gt;
+        &lt;HeadLine&gt;Fundamentals Wire — HTTPS Push Test Delivery&lt;/HeadLine&gt;
+        &lt;DateLine&gt;NEW YORK--(FUNDAMENTALS WIRE)--2026-01-15&lt;/DateLine&gt;
+        &lt;SlugLine&gt;HTTPS Push Test&lt;/SlugLine&gt;
+      &lt;/NewsLines&gt;
+
+      &lt;DescriptiveMetadata&gt;
+        &lt;Language FormalName="en"/&gt;
+        &lt;Genre FormalName="Release"/&gt;
+      &lt;/DescriptiveMetadata&gt;
+
+      &lt;NewsComponent&gt;
+        &lt;Role FormalName="HeadLine"/&gt;
+        &lt;BasisForChoice Rank="1"&gt;./ContentItem/Format&lt;/BasisForChoice&gt;
+        &lt;DescriptiveMetadata&gt;&lt;Language FormalName="en"/&gt;&lt;/DescriptiveMetadata&gt;
+        &lt;ContentItem Duid="8d8d5c97-24a1-4d21-a013-66cfd0809e12.headline"&gt;
+          &lt;Format FormalName="XHTML"/&gt;
+          &lt;MimeType FormalName="text/xhtml"/&gt;
+          &lt;DataContent&gt;&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;head&gt;&lt;title&gt;&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;p class="fwtextaligncenter"&gt;&lt;b&gt;Fundamentals Wire — HTTPS Push Test Delivery&lt;/b&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;&lt;/DataContent&gt;
+        &lt;/ContentItem&gt;
+      &lt;/NewsComponent&gt;
+
+      &lt;NewsComponent&gt;
+        &lt;Role FormalName="Body"/&gt;
+        &lt;BasisForChoice Rank="1"&gt;./ContentItem/Format&lt;/BasisForChoice&gt;
+        &lt;DescriptiveMetadata&gt;&lt;Language FormalName="en"/&gt;&lt;/DescriptiveMetadata&gt;
+        &lt;ContentItem Duid="8d8d5c97-24a1-4d21-a013-66cfd0809e12.body"&gt;
+          &lt;Format FormalName="XHTML"/&gt;
+          &lt;MimeType FormalName="text/xhtml"/&gt;
+          &lt;DataContent&gt;&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;head&gt;&lt;title&gt;&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;This is a test delivery.&lt;/b&gt;&lt;/p&gt;
+&lt;p&gt;If you can read this, your endpoint accepted an HTTPS POST containing NewsML 1.2.&lt;/p&gt;
+&lt;p&gt;newsItemId: &lt;code&gt;8d8d5c97-24a1-4d21-a013-66cfd0809e12&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;created: &lt;code&gt;2026-01-15T20:24:21.113Z&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;handler: &lt;code&gt;integrator-request@2026-01-15T04:30Z&lt;/code&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;&lt;/DataContent&gt;
+        &lt;/ContentItem&gt;
+      &lt;/NewsComponent&gt;
+
+      &lt;NewsComponent&gt;
+        &lt;Role FormalName="StyleSheet"/&gt;
+        &lt;BasisForChoice Rank="1"&gt;./ContentItem/Format&lt;/BasisForChoice&gt;
+        &lt;DescriptiveMetadata&gt;&lt;Language FormalName="en"/&gt;&lt;/DescriptiveMetadata&gt;
+        &lt;ContentItem Duid="8d8d5c97-24a1-4d21-a013-66cfd0809e12.stylesheet"&gt;
+          &lt;Format FormalName="CSS"/&gt;
+          &lt;MimeType FormalName="text/css"/&gt;
+          &lt;DataContent&gt;.fwtextaligncenter { text-align: center; }&lt;/DataContent&gt;
+        &lt;/ContentItem&gt;
+      &lt;/NewsComponent&gt;
+
+    &lt;/NewsComponent&gt;
+  &lt;/NewsItem&gt;
+&lt;/NewsML&gt;</code></pre>
+            </div>
+          </div>
+
+          <div class="footerNote">
+            Fundamentals Wire NewsML profile: NewsML 1.2, press-release oriented, immutable per publish event.
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Copy buttons for code blocks -->
+    <script>
+      (function () {
+        function copyText(text) {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            return navigator.clipboard.writeText(text);
+          }
+          var ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand("copy"); } catch (e) {}
+          document.body.removeChild(ta);
+          return Promise.resolve();
+        }
+
+        document.addEventListener("click", function (e) {
+          var btn = e.target.closest("[data-copy-pre]");
+          if (!btn) return;
+
+          var block = btn.closest("[data-codeblock]");
+          if (!block) return;
+
+          var pre = block.querySelector("pre");
+          if (!pre) return;
+
+          var text = pre.textContent || "";
+          copyText(text).then(function () {
+            var old = btn.textContent;
+            btn.textContent = "Copied";
+            setTimeout(function () { btn.textContent = old; }, 900);
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>
