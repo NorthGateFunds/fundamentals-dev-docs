@@ -351,6 +351,71 @@
     }
     .codeBlock pre::-webkit-scrollbar-track{ background:rgba(15,23,42,.04); }
 
+    /* ---- MOBILE WIDTH FIX (page-only) ---- */
+/* Prevent any single row from widening the viewport */
+html, body { overflow-x: hidden; }
+
+/* Allow flex/grid children to actually shrink (key for mobile) */
+/* Allow flex/grid children to actually shrink (key for mobile) */
+.layout,
+.main,
+.content,
+.card,
+.kv,
+.ctaList,
+.ctaRow,
+.ctaLeft,
+.fwStepTop,
+.formPanelHeader,
+.codeBlockTop {
+  min-width: 0;
+}
+
+/* Pills: allow shrink + wrap */
+.fwPill {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* CTA rows: allow the left block to shrink and wrap text */
+.ctaRow,
+.ctaLeft {
+  min-width: 0;
+}
+
+.ctaTitle,
+.ctaDesc {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Key/value rows: long paths/URLs should wrap instead of forcing width */
+.kv .v,
+.kv code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Pills: on small screens, let them wrap if needed */
+.fwPill {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Code blocks should scroll internally, never widen the page */
+.codeBlock,
+.codeBlock pre {
+  max-width: 100%;
+}
+
+.codeBlock pre {
+  -webkit-overflow-scrolling: touch;
+}
+
     /* NOTE: removed the global `.card { overflow: visible; }` override.
        That one can break layout/nav on mobile. If you need overflow changes,
        scope them to the examples section only. */
