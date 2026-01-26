@@ -416,6 +416,10 @@ html, body { overflow-x: hidden; }
   -webkit-overflow-scrolling: touch;
 }
 
+/* TEMP: hide Push Access CTA + panel */
+a[data-open-accordion="pushAccess"] { display: none !important; }
+#pushAccessAccordion { display: none !important; }
+
     /* NOTE: removed the global `.card { overflow: visible; }` override.
        That one can break layout/nav on mobile. If you need overflow changes,
        scope them to the examples section only. */
@@ -485,12 +489,12 @@ html, body { overflow-x: hidden; }
 
             <div class="ctaList" style="margin-top:12px;">
               <a
-                class="ctaRow ctaRowPrimary"
-                href="#"
-                data-open-accordion="pushAccess"
-                aria-controls="pushAccessAccordion"
-                aria-expanded="false"
-              >
+  class="ctaRow ctaRowPrimary fwHidden"
+  href="#"
+  data-open-accordion="pushAccess"
+  aria-controls="pushAccessAccordion"
+  aria-expanded="false"
+>
                 <div class="ctaLeft">
                   <div class="ctaTitle">Initiate push access (4 min.)</div>
                   <div class="ctaDesc">Add your endpoints. We’ll send a live test delivery and unlock permanent push.</div>
@@ -524,7 +528,7 @@ html, body { overflow-x: hidden; }
             <!-- Accordion area -->
             <div class="inlineFormWrap">
               <!-- PUSH ACCESS ACCORDION -->
-              <div class="formPanel" id="pushAccessAccordion" aria-hidden="true">
+              <div class="formPanel fwHidden" id="pushAccessAccordion" aria-hidden="true">
                 <div class="formPanelHeader">
                   <div>
                     <div class="formPanelTitle">Set up HTTPS Push</div>
