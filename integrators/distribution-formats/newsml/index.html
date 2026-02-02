@@ -473,18 +473,18 @@ a[data-open-accordion="pushAccess"] { display: none !important; }
       <main class="main">
         <div class="content">
           <!-- HERO -->
-          <h1 class="h1">NewsML over HTTPS Push</h1>
+          <h1 class="h1">NewsML</h1>
 
           <p class="lead">
             Fundamentals Wire delivers each published press release as a full <strong>NewsML 1.2</strong> document via
-            <strong>HTTPS POST</strong> to an endpoint you control. Each publish event produces one immutable NewsML payload.
+            <strong>SFTP</strong> to an endpoint you control. Each publish event produces one immutable NewsML payload.
           </p>
 
           <!-- TOP CTA -->
           <div class="card">
             <h3 style="margin-top:0;">Integrate in one afternoon</h3>
             <p style="margin-bottom:14px;">
-              Register an HTTPS endpoint, test delivery, then enable ongoing delivery.
+              SFTP integration coming soon.
             </p>
 
             <div class="ctaList" style="margin-top:12px;">
@@ -531,7 +531,7 @@ a[data-open-accordion="pushAccess"] { display: none !important; }
               <div class="formPanel fwHidden" id="pushAccessAccordion" aria-hidden="true">
                 <div class="formPanelHeader">
                   <div>
-                    <div class="formPanelTitle">Set up HTTPS Push</div>
+                    <div class="formPanelTitle">Set up SFTP</div>
                     <div class="formPanelSub">
                       Step 1 sends a test delivery to your <strong>test</strong> endpoint. Step 2 enables ongoing delivery to your <strong>production</strong> endpoint.
                     </div>
@@ -588,7 +588,7 @@ a[data-open-accordion="pushAccess"] { display: none !important; }
                               placeholder="https://example.com/webhooks/fundamentals-wire/newsml-test"
                               required
                             />
-                            <div class="fhelp">Use a staging/test URL. Must accept HTTPS POST and return 2xx quickly.</div>
+                            <div class="fhelp">Use a staging/test URL. Must accept SFTP and return 2xx quickly.</div>
                           </div>
                         </div>
 
@@ -709,7 +709,7 @@ a[data-open-accordion="pushAccess"] { display: none !important; }
           <div class="card">
             <h3 style="margin-top:0;">Quickstart</h3>
             <ol class="list" style="margin-bottom:0;">
-              <li><strong>Provide an HTTPS endpoint</strong> (publicly reachable) and a technical contact.</li>
+              <li><strong>Provide an SFTP endpoint</strong> (publicly reachable) and a technical contact.</li>
               <li><strong>Verify delivery</strong> by returning a fast <strong>2xx</strong>.</li>
               <li><strong>Enable ongoing delivery</strong> once your handler is ready.</li>
               <li><strong>Acknowledge fast</strong> (2xx) and process asynchronously (queue/job runner recommended).</li>
@@ -888,7 +888,7 @@ a[data-open-accordion="pushAccess"] { display: none !important; }
     <div>
       <h3 style="margin:0;">Example HTTP request</h3>
       <div style="margin-top:6px; color:var(--muted); font-size:13px; line-height:1.5;">
-        Your endpoint receives a single <strong>HTTPS POST</strong> with <strong>NewsML 1.2</strong> as the body.
+        Your endpoint receives a single <strong>SFTP</strong> with <strong>NewsML 1.2</strong> as the body.
       </div>
     </div>
     <div class="fwBadge" style="margin-top:2px;">Inbound</div>
@@ -1000,9 +1000,9 @@ X-FW-Signature: t=1700000000,v1=...
       &lt;BasisForChoice Rank="1"&gt;./NewsComponent/Role&lt;/BasisForChoice&gt;
 
       &lt;NewsLines&gt;
-        &lt;HeadLine&gt;Fundamentals Wire — HTTPS Push Test Delivery&lt;/HeadLine&gt;
+        &lt;HeadLine&gt;Fundamentals Wire — SFTP Test Delivery&lt;/HeadLine&gt;
         &lt;DateLine&gt;NEW YORK--(FUNDAMENTALS WIRE)--2026-01-15&lt;/DateLine&gt;
-        &lt;SlugLine&gt;HTTPS Push Test&lt;/SlugLine&gt;
+        &lt;SlugLine&gt;SFTP Test&lt;/SlugLine&gt;
       &lt;/NewsLines&gt;
 
       &lt;DescriptiveMetadata&gt;
@@ -1017,7 +1017,7 @@ X-FW-Signature: t=1700000000,v1=...
         &lt;ContentItem Duid="8d8d5c97-24a1-4d21-a013-66cfd0809e12.headline"&gt;
           &lt;Format FormalName="XHTML"/&gt;
           &lt;MimeType FormalName="text/xhtml"/&gt;
-          &lt;DataContent&gt;&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;head&gt;&lt;title&gt;&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;p class="fwtextaligncenter"&gt;&lt;b&gt;Fundamentals Wire — HTTPS Push Test Delivery&lt;/b&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;&lt;/DataContent&gt;
+          &lt;DataContent&gt;&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;head&gt;&lt;title&gt;&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;p class="fwtextaligncenter"&gt;&lt;b&gt;Fundamentals Wire — SFTP Push Test Delivery&lt;/b&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;&lt;/DataContent&gt;
         &lt;/ContentItem&gt;
       &lt;/NewsComponent&gt;
 
@@ -1029,7 +1029,7 @@ X-FW-Signature: t=1700000000,v1=...
           &lt;Format FormalName="XHTML"/&gt;
           &lt;MimeType FormalName="text/xhtml"/&gt;
           &lt;DataContent&gt;&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;head&gt;&lt;title&gt;&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;p&gt;&lt;b&gt;This is a test delivery.&lt;/b&gt;&lt;/p&gt;
-&lt;p&gt;If you can read this, your endpoint accepted an HTTPS POST containing NewsML 1.2.&lt;/p&gt;
+&lt;p&gt;If you can read this, your endpoint accepted an SFTP containing NewsML 1.2.&lt;/p&gt;
 &lt;p&gt;newsItemId: &lt;code&gt;8d8d5c97-24a1-4d21-a013-66cfd0809e12&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;created: &lt;code&gt;2026-01-15T20:24:21.113Z&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;handler: &lt;code&gt;integrator-request@2026-01-15T04:30Z&lt;/code&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;&lt;/DataContent&gt;
